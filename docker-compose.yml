@@ -1,0 +1,14 @@
+version: '3'
+services:
+  rabbitmq:
+    image: "rabbitmq:3"
+    hostname: rabbit-server1
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+  orientdb:
+    hostname: orientdb-server1
+    image: "orientdb:latest"
+    ports:
+        - "2424:2424"
+        - "2480:2480"
