@@ -12,8 +12,8 @@ services:
       - "5672:5672"
       - "15672:15672"
   orientdb:
-    hostname: orientdb-server1
     image: "orientdb:latest"
+    hostname: orientdb-server1
     ports:
         - "2424:2424"
         - "2480:2480"
