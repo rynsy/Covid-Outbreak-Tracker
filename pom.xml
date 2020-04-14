@@ -5,13 +5,13 @@
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>edu.uky</groupId>
-    <artifactId>cs505-pubsub-cep-template</artifactId>
+    <artifactId>cs505-final</artifactId>
     <version>1.0-SNAPSHOT</version>
 
 
     <properties>
-        <jarName>pubsub-cep-web</jarName>
-        <mainClass>cs505pubsubcep.Launcher</mainClass>
+        <jarName>cs505final</jarName>
+        <mainClass>cs505final.Launcher</mainClass>
         <jersey.version>2.22.2</jersey.version>
         <derby.version>10.14.2.0</derby.version>
         <jdk>1.8</jdk>
@@ -138,6 +138,7 @@
             <artifactId>derby</artifactId>
             <version>${derby.version}</version>
         </dependency>
+
         <!-- OrientDB Dependency -->
         <dependency>
             <groupId>com.orientechnologies</groupId>
@@ -158,7 +159,7 @@
                 <configuration>
                     <archive>
                         <manifest>
-                            <mainClass>cs505pubsubcep.Launcher</mainClass>
+                            <mainClass>cs505final.Launcher</mainClass>
                             <addDefaultImplementationEntries>true</addDefaultImplementationEntries>
                             <addDefaultSpecificationEntries>true</addDefaultSpecificationEntries>
                         </manifest>
