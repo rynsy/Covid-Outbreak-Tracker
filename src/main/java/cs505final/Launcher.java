@@ -1,6 +1,8 @@
 package cs505final;
 
 import cs505final.CEP.CEPEngine;
+import cs505final.graph.GraphEngine;
+import cs505final.database.DBEngine;
 import cs505final.Topics.TopicConnector;
 import cs505final.httpfilters.AuthenticationFilter;
 import org.glassfish.grizzly.http.server.HttpServer;
@@ -22,15 +24,14 @@ public class Launcher {
     public static TopicConnector topicConnector;
 
     public static CEPEngine cepEngine = null;
+    public static GraphEngine graphEngine = null;
+    public static DBEngine dbEngine = null;
 
-    public static void main(String[] args) throws IOException {
-
-
+    public static void initCEP() {
         System.out.println("Starting CEP...");
         //Embedded database initialization
 
         cepEngine = new CEPEngine();
-
 
         //START MODIFY
         inputStreamName = "PatientInStream";
@@ -51,7 +52,31 @@ public class Launcher {
         cepEngine.createCEP(inputStreamName, outputStreamName, inputStreamAttributesString, outputStreamAttributesString, queryString);
 
         System.out.println("CEP Started...");
+    }
 
+    public static void initGraphDb() {
+        System.out.println("Initializing OrientDB...");
+
+        graphEngine = new GraphEngine();
+        graphEngine.initDB();
+
+        System.out.println("OrientDD Started...");
+    }
+    
+    public static void initDb() {
+        System.out.println("Initializing OrientDB...");
+
+        dbEngine = new DBEngine();
+        dbEngine.initDB();
+
+        System.out.println("OrientDD Started...");
+    }
+
+    public static void main(String[] args) throws IOException {
+
+        initCEP();
+        initGraphDb();
+        initDb();
 
         //starting Collector
         topicConnector = new TopicConnector();

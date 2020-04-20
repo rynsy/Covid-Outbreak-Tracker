@@ -38,81 +38,117 @@ public class API {
     //check remote
     //curl --header "X-Auth-API-key:1234" "http://[linkblueid].cs.uky.edu:8081/api/checkmycep"
 
+
+    /*
+    *  TODO: This may need to drop the auth API key
+    * */
     @GET
-    @Path("/checkmycep")
+    @Path("/mf1")
     @Produces(MediaType.APPLICATION_JSON)
-    public Response checkMyEndpoint(@HeaderParam("X-Auth-API-Key") String authKey) {
+    public Response getTeamName(@HeaderParam("X-Auth-API-Key") String authKey) {
         String responseString = "{}";
-        try {
-
-            //get remote ip address from request
-            String remoteIP = request.get().getRemoteAddr();
-            //get the timestamp of the request
-            long access_ts = System.currentTimeMillis();
-            System.out.println("IP: " + remoteIP + " Timestamp: " + access_ts);
-
-            Map<String,String> responseMap = new HashMap<>();
-            if(Launcher.cepEngine != null) {
-
-                    responseMap.put("success", Boolean.TRUE.toString());
-                    responseMap.put("status_desc","CEP Engine exists");
-
-            } else {
-                responseMap.put("success", Boolean.FALSE.toString());
-                responseMap.put("status_desc","CEP Engine is null!");
-            }
-
-            responseString = gson.toJson(responseMap);
-
-
-        } catch (Exception ex) {
-
-            StringWriter sw = new StringWriter();
-            ex.printStackTrace(new PrintWriter(sw));
-            String exceptionAsString = sw.toString();
-            ex.printStackTrace();
-
-            return Response.status(500).entity(exceptionAsString).build();
-        }
+        Map<String,String> responseMap = new HashMap<>();
+        responseMap.put("team_name","RAYN");
+        responseString = gson.toJson(responseMap);
         return Response.ok(responseString).header("Access-Control-Allow-Origin", "*").build();
     }
 
+    /*
+    * TODO this needs to return an actual status. And needs to call all the database components
+    * */
     @GET
-    @Path("/getaccesscount")
+    @Path("/mf2")
     @Produces(MediaType.APPLICATION_JSON)
-    public Response getAccessCount(@HeaderParam("X-Auth-API-Key") String authKey) {
+    public Response resetApp(@HeaderParam("X-Auth-API-Key") String authKey) {
         String responseString = "{}";
-        try {
-
-            //get remote ip address from request
-            String remoteIP = request.get().getRemoteAddr();
-            //get the timestamp of the request
-            long access_ts = System.currentTimeMillis();
-            System.out.println("IP: " + remoteIP + " Timestamp: " + access_ts);
-
-            //generate event based on access
-            String inputEvent = gson.toJson(new accessRecord(remoteIP,access_ts));
-            System.out.println("inputEvent: " + inputEvent);
-
-            //send input event to CEP
-            Launcher.cepEngine.input(Launcher.inputStreamName, inputEvent);
-
-            //generate a response
-            Map<String,String> responseMap = new HashMap<>();
-            responseMap.put("accesscoint",String.valueOf(Launcher.accessCount));
-            responseString = gson.toJson(responseMap);
-
-        } catch (Exception ex) {
-
-            StringWriter sw = new StringWriter();
-            ex.printStackTrace(new PrintWriter(sw));
-            String exceptionAsString = sw.toString();
-            ex.printStackTrace();
-
-            return Response.status(500).entity(exceptionAsString).build();
-        }
+        Map<String,String> responseMap = new HashMap<>();
+        responseMap.put("team_name","RAYN");
+        responseString = gson.toJson(responseMap);
         return Response.ok(responseString).header("Access-Control-Allow-Origin", "*").build();
     }
 
+    /*
+     * TODO Does this even need to be here? Maybe the subscriber returns this. Same for other RTR functions
+     * */
+    @GET
+    @Path("/rtr1")
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response alertOnZip(@HeaderParam("X-Auth-API-Key") String authKey) {
+        String responseString = "{}";
+        Map<String,String> responseMap = new HashMap<>();  
+            //Launcher.cepEngine.input(Launcher.inputStreamName, inputEvent); // NOTE: This is how you'll access the components
+        responseMap.put("team_name","RAYN");
+        responseString = gson.toJson(responseMap);
+        return Response.ok(responseString).header("Access-Control-Allow-Origin", "*").build();
+    }
 
+    /*
+     * TODO Does this even need to be here? Maybe the subscriber returns this. Same for other RTR functions
+     * */
+    @GET
+    @Path("/rtr2")
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response alertOnState(@HeaderParam("X-Auth-API-Key") String authKey) {
+        String responseString = "{}";
+        Map<String,String> responseMap = new HashMap<>();
+        responseMap.put("team_name","RAYN");
+        responseString = gson.toJson(responseMap);
+        return Response.ok(responseString).header("Access-Control-Allow-Origin", "*").build();
+    }
+
+    /*
+     * TODO Does this even need to be here? Maybe the subscriber returns this. Same for other RTR functions
+     * */
+    @GET
+    @Path("/rtr3")
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response stateCounter(@HeaderParam("X-Auth-API-Key") String authKey) {
+        String responseString = "{}";
+        Map<String,String> responseMap = new HashMap<>();
+        responseMap.put("team_name","RAYN");
+        responseString = gson.toJson(responseMap);
+        return Response.ok(responseString).header("Access-Control-Allow-Origin", "*").build();
+    }
+
+    /*
+     * TODO Does this even need to be here? Maybe the subscriber returns this. Same for other RTR functions
+     * */
+    @GET
+    @Path("/of1")
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response routeToHospital(@HeaderParam("X-Auth-API-Key") String authKey) {
+        String responseString = "{}";
+        Map<String,String> responseMap = new HashMap<>();
+        responseMap.put("team_name","RAYN");
+        responseString = gson.toJson(responseMap);
+        return Response.ok(responseString).header("Access-Control-Allow-Origin", "*").build();
+    }
+
+    /*
+     * TODO Does this even need to be here? Maybe the subscriber returns this. Same for other RTR functions
+     * */
+    @GET
+    @Path("/of2")
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response searchByMRN(@HeaderParam("X-Auth-API-Key") String authKey) {
+        String responseString = "{}";
+        Map<String,String> responseMap = new HashMap<>();
+        responseMap.put("team_name","RAYN");
+        responseString = gson.toJson(responseMap);
+        return Response.ok(responseString).header("Access-Control-Allow-Origin", "*").build();
+    }
+
+    /*
+     * TODO Does this even need to be here? Maybe the subscriber returns this. Same for other RTR functions
+     * */
+    @GET
+    @Path("/of3")
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response hospitalPatientNumber(@HeaderParam("X-Auth-API-Key") String authKey) {
+        String responseString = "{}";
+        Map<String,String> responseMap = new HashMap<>();
+        responseMap.put("team_name","RAYN");
+        responseString = gson.toJson(responseMap);
+        return Response.ok(responseString).header("Access-Control-Allow-Origin", "*").build();
+    }
 }

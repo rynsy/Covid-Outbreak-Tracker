@@ -18,7 +18,7 @@ public class TopicConnector {
     private Gson gson;
     final Type typeOf = new TypeToken<List<Map<String,String>>>(){}.getType();
 
-    private String EXCHANGE_NAME = "patient_data";
+    private String EXCHANGE_NAME = "patient_data";   // TODO: Exchange may be different depending on function
 
     public TopicConnector() {
         gson = new Gson();
@@ -27,7 +27,10 @@ public class TopicConnector {
     public void connect() {
 
         try {
-
+/*
+*   TODO: Put in rabbitmq credentials
+*
+* */
             String hostname = "";
             String username = "";
             String password = "";

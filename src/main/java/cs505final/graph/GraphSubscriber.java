@@ -1,12 +1,12 @@
-package cs505final.CEP;
+package cs505final.graph;
 
 import io.siddhi.core.util.transport.InMemoryBroker;
 
-public class OutputSubscriber implements InMemoryBroker.Subscriber {
+public class GraphSubscriber implements InMemoryBroker.Subscriber {
 
     private String topic;
 
-    public OutputSubscriber(String topic, String streamName) {
+    public GraphSubscriber(String topic, String streamName) {
         this.topic = topic;
     }
 

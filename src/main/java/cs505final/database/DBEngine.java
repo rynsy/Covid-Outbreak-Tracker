@@ -120,6 +120,25 @@ public class DBEngine {
         }
     }
 
+    public void resetDB() {
+        /* TODO Change table schema */
+        String createRNode = "CREATE TABLE accesslog" +
+                "(" +
+                "   remote_ip varchar(255)," +
+                "   access_ts bigint" +
+                ")";
+
+        try {
+            try(Connection conn = ds.getConnection()) {
+                try (Statement stmt = conn.createStatement()) {
+                    stmt.executeUpdate(createRNode);
+                }
+            }
+        } catch(Exception ex) {
+            ex.printStackTrace();
+        }
+    }
+
     void delete(File f) throws IOException {
         if (f.isDirectory()) {
             for (File c : f.listFiles())
