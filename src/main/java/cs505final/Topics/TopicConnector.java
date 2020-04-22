@@ -31,10 +31,10 @@ public class TopicConnector {
 *   TODO: Put in rabbitmq credentials
 *
 * */
-            String hostname = "";
-            String username = "";
-            String password = "";
-            String virtualhost = "";
+            String hostname = "localhost";
+            String username = "guest";
+            String password = "guest";
+            String virtualhost = "/";
 
             ConnectionFactory factory = new ConnectionFactory();
             factory.setHost(hostname);
@@ -61,7 +61,10 @@ public class TopicConnector {
                 List<Map<String,String>> incomingList = gson.fromJson(message, typeOf);
                 for(Map<String,String> map : incomingList) {
                     System.out.println("INPUT CEP EVENT: " +  map);
-                    Launcher.cepEngine.input(Launcher.inputStreamName, gson.toJson(map));
+                    String payload = gson.toJson(map);
+                    Launcher.cepEngine.input(Launcher.inputStreamName, payload);
+                    Launcher.dbEngine.input(payload);
+                    Launcher.graphEngine.input(payload);
                 }
                 System.out.println("");
                 System.out.println("");

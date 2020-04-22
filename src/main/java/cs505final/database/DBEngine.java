@@ -20,6 +20,7 @@ import java.util.Map;
 public class DBEngine {
 
     private DataSource ds;
+    private String hospitalFile = "data/hospitals.csv";
 
     public DBEngine() {
 
@@ -276,4 +277,8 @@ public class DBEngine {
         return accessMapList;
     }
 
+
+    public void input(String jsonPayload) {
+
+    }
 }

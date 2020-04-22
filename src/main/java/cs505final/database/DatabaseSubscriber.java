@@ -1,8 +1,6 @@
 package cs505final.database;
 
-import io.siddhi.core.util.transport.InMemoryBroker;
-
-public class DatabaseSubscriber implements InMemoryBroker.Subscriber {
+public class DatabaseSubscriber {
 
     private String topic;
 
@@ -10,7 +8,6 @@ public class DatabaseSubscriber implements InMemoryBroker.Subscriber {
         this.topic = topic;
     }
 
-    @Override
     public void onMessage(Object msg) {
 
         try {
@@ -26,7 +23,6 @@ public class DatabaseSubscriber implements InMemoryBroker.Subscriber {
 
     }
 
-    @Override
     public String getTopic() {
         return topic;
     }

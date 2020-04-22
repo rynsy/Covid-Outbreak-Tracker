@@ -27,9 +27,25 @@ public class Launcher {
     public static GraphEngine graphEngine = null;
     public static DBEngine dbEngine = null;
 
+   /*
+   * TODO: FIX ORANIZATION
+   *
+   * CEP is initialized in Launcher
+   * DB is initialized in constructor
+   * GraphDB is initialized in constructor
+   *
+   * */
+
+
     public static void initCEP() {
         System.out.println("Starting CEP...");
         //Embedded database initialization
+
+       /*
+       *  TODO: There's going to be two of these things
+       *   one is going to be downstream to listen/count alerts
+       *
+       * */
 
         cepEngine = new CEPEngine();
 
@@ -58,7 +74,6 @@ public class Launcher {
         System.out.println("Initializing OrientDB...");
 
         graphEngine = new GraphEngine();
-        graphEngine.initDB();
 
         System.out.println("OrientDD Started...");
     }
@@ -67,7 +82,6 @@ public class Launcher {
         System.out.println("Initializing OrientDB...");
 
         dbEngine = new DBEngine();
-        dbEngine.initDB();
 
         System.out.println("OrientDD Started...");
     }

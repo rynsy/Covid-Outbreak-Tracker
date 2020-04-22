@@ -1,0 +1,7 @@
+First thing to do: Change the RabbitMQ portion of the code to pull in data from the server he specified on Canvas. Then
+have a single class that pulls in that data and processes it.
+
+I think you'll pull things into an in-memory queue and then run through that queue and update the appropriate databases
+
+
+Cody suggested having two CEPs, one downstream to listen for counts of counties on alerts.

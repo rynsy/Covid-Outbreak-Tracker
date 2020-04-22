@@ -1,8 +1,6 @@
 package cs505final.graph;
 
-import io.siddhi.core.util.transport.InMemoryBroker;
-
-public class GraphSubscriber implements InMemoryBroker.Subscriber {
+public class GraphSubscriber {
 
     private String topic;
 
@@ -10,7 +8,6 @@ public class GraphSubscriber implements InMemoryBroker.Subscriber {
         this.topic = topic;
     }
 
-    @Override
     public void onMessage(Object msg) {
 
         try {
@@ -26,7 +23,6 @@ public class GraphSubscriber implements InMemoryBroker.Subscriber {
 
     }
 
-    @Override
     public String getTopic() {
         return topic;
     }
