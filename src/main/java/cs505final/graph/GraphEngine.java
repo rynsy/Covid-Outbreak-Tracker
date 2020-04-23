@@ -2,6 +2,13 @@ package cs505final.graph;
 
 import com.orientechnologies.orient.core.config.OGlobalConfiguration;
 import com.orientechnologies.orient.core.db.*;
+import cs505final.Launcher;
+
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.util.*;
 
 public class GraphEngine {
 
@@ -13,7 +20,7 @@ public class GraphEngine {
     private static String databaseUserName = "root";
     private static String databasePassword = "rootpwd";
 
-    private String distanceFile = "data/kyzipdistance.csv";
+    private static String distanceFile = "./data/kyzipdistance.csv";
 
     public GraphEngine() {
 
@@ -51,23 +58,45 @@ public class GraphEngine {
         loadData();
     }
 
-    public void loadData() {
-        ODatabaseSession db = createSession(orient);
-        /*
-        * TODO:
-        *   Open file
-        *   Make a loop to process data
-        *   Make a query to insert data
-        * */
-        db.close();
-    }
-
     public void resetDB() {
-        /* TODO: drop all data and custom classes */
         orient.drop(databaseName);
+        initDB();
     }
 
     public void input(String jsonPayload) {
 
     }
+
+    public void loadData() {
+        ODatabaseSession db = createSession(orient);
+        /*
+        * TODO:
+        *   Make a loop to process data
+        *   Make a query to insert data
+        * */
+        List<Map<String, String>> zipDistances = readCsvData();
+
+        db.close();
+    }
+
+   public static List<Map<String, String>> readCsvData()  {
+        List<Map<String, String>> response = new LinkedList<Map<String,String>>();
+        FileInputStream dataFile = null;
+        try {
+            dataFile = new FileInputStream(distanceFile);
+        } catch(FileNotFoundException ex) {
+            System.out.println("Couldn't open the file");
+        }
+        Scanner sc = new Scanner(dataFile);
+        String[] header = sc.nextLine().split(",");
+        while (sc.hasNextLine()) {
+            String[] dataLine = sc.nextLine().split(",");
+            Map<String, String> line = new HashMap<String, String>();
+            for (int i = 0; i < header.length; i++) {
+                line.put(header[i], dataLine[i]);
+            }
+            response.add(line);
+        }
+        return response;
+   }
 }

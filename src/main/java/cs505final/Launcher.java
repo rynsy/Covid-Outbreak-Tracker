@@ -79,11 +79,11 @@ public class Launcher {
     }
     
     public static void initDb() {
-        System.out.println("Initializing OrientDB...");
+        System.out.println("Initializing RelationalDB...");
 
         dbEngine = new DBEngine();
 
-        System.out.println("OrientDD Started...");
+        System.out.println("RelationalDB Started...");
     }
 
     public static void main(String[] args) throws IOException {

@@ -20,7 +20,7 @@ import java.util.Map;
 public class DBEngine {
 
     private DataSource ds;
-    private String hospitalFile = "data/hospitals.csv";
+    private String hospitalFile = "hospitals.csv";
 
     public DBEngine() {
 
@@ -49,8 +49,6 @@ public class DBEngine {
              */
 
             initDB();
-
-
         }
 
         catch (Exception ex) {
