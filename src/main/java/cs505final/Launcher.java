@@ -10,8 +10,11 @@ import org.glassfish.jersey.grizzly2.httpserver.GrizzlyHttpServerFactory;
 import org.glassfish.jersey.server.ResourceConfig;
 
 import javax.ws.rs.core.UriBuilder;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.URI;
+import java.util.*;
 
 
 public class Launcher {
@@ -75,7 +78,7 @@ public class Launcher {
 
         graphEngine = new GraphEngine();
 
-        System.out.println("OrientDD Started...");
+        System.out.println("OrientDB Started...");
     }
     
     public static void initDb() {
@@ -127,4 +130,25 @@ public class Launcher {
         }
     }
 
+
+    public static List<Map<String, String>> readCsvData(String filename)  {
+        List<Map<String, String>> response = new LinkedList<Map<String,String>>();
+        FileInputStream dataFile = null;
+        try {
+            dataFile = new FileInputStream(filename);
+        } catch(FileNotFoundException ex) {
+            System.out.println("Couldn't open file: " + filename);
+        }
+        Scanner sc = new Scanner(dataFile);
+        String[] header = sc.nextLine().split(",");
+        while (sc.hasNextLine()) {
+            String[] dataLine = sc.nextLine().split(",");
+            Map<String, String> line = new HashMap<String, String>();
+            for (int i = 0; i < header.length; i++) {
+                line.put(header[i], dataLine[i]);
+            }
+            response.add(line);
+        }
+        return response;
+    }
 }

@@ -1,6 +1,7 @@
 package cs505final.database;
 
 import com.google.gson.reflect.TypeToken;
+import cs505final.Launcher;
 import org.apache.commons.dbcp2.*;
 import org.apache.commons.pool2.ObjectPool;
 import org.apache.commons.pool2.impl.GenericObjectPool;
@@ -20,7 +21,7 @@ import java.util.Map;
 public class DBEngine {
 
     private DataSource ds;
-    private String hospitalFile = "hospitals.csv";
+    private String hospitalFile = "./data/hospitals.csv";
 
     public DBEngine() {
 
@@ -112,6 +113,7 @@ public class DBEngine {
             try(Connection conn = ds.getConnection()) {
                 try (Statement stmt = conn.createStatement()) {
                     stmt.executeUpdate(createRNode);
+                    loadData();
                 }
             }
         } catch(Exception ex) {
@@ -120,22 +122,16 @@ public class DBEngine {
     }
 
     public void resetDB() {
-        /* TODO Change table schema */
-        String createRNode = "CREATE TABLE accesslog" +
-                "(" +
-                "   remote_ip varchar(255)," +
-                "   access_ts bigint" +
-                ")";
+        /* TODO Change table schema
+        * Also this should be dropping the database and then calling init. No need to redo everything
+        * */
+        dropTable("SampleTablename");
+        initDB();
+        loadData();
+    }
 
-        try {
-            try(Connection conn = ds.getConnection()) {
-                try (Statement stmt = conn.createStatement()) {
-                    stmt.executeUpdate(createRNode);
-                }
-            }
-        } catch(Exception ex) {
-            ex.printStackTrace();
-        }
+    public void loadData() {
+        List<Map<String, String>> hospitalData = Launcher.readCsvData(hospitalFile);
     }
 
     void delete(File f) throws IOException {

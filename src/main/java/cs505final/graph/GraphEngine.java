@@ -74,29 +74,9 @@ public class GraphEngine {
         *   Make a loop to process data
         *   Make a query to insert data
         * */
-        List<Map<String, String>> zipDistances = readCsvData();
+        List<Map<String, String>> zipDistances = Launcher.readCsvData(distanceFile);
 
         db.close();
     }
 
-   public static List<Map<String, String>> readCsvData()  {
-        List<Map<String, String>> response = new LinkedList<Map<String,String>>();
-        FileInputStream dataFile = null;
-        try {
-            dataFile = new FileInputStream(distanceFile);
-        } catch(FileNotFoundException ex) {
-            System.out.println("Couldn't open the file");
-        }
-        Scanner sc = new Scanner(dataFile);
-        String[] header = sc.nextLine().split(",");
-        while (sc.hasNextLine()) {
-            String[] dataLine = sc.nextLine().split(",");
-            Map<String, String> line = new HashMap<String, String>();
-            for (int i = 0; i < header.length; i++) {
-                line.put(header[i], dataLine[i]);
-            }
-            response.add(line);
-        }
-        return response;
-   }
 }
