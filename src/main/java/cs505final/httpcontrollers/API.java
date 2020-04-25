@@ -55,6 +55,12 @@ public class API {
 
     /*
     * TODO this needs to return an actual status. And needs to call all the database components
+    *
+    * The data that doesn't change doesn't need to be reloaded.
+    *
+    * You're not going to store patient counts in the graph database (or don't have to), and resetting
+    * the app would be much faster if you just loaded the graph database once and then didn't do it again.
+    *
     * */
     @GET
     @Path("/mf2")
