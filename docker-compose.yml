@@ -5,6 +5,14 @@ services:
     hostname: final-server1
     ports:
       - "80:80"
+  mysql:
+    image: "mysql:5.7"
+    hostname: mysql-server1
+    ports:
+      - "3306:3306"
+    environment:
+      MYSQL_ROOT_PASSWORD: rootpwd
+      MYSQL_DATABASE: reporting_app
   rabbitmq:
     image: "rabbitmq:3"
     hostname: rabbit-server1
@@ -18,4 +26,4 @@ services:
         - "2424:2424"
         - "2480:2480"
     environment:
-      - ORIENTDB_ROOT_PASSWORD=rootpwd
+      ORIENTDB_ROOT_PASSWORD: rootpwd

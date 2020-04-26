@@ -28,14 +28,6 @@ public class GraphEngine {
 
     private static String distanceFile = "./data/kyzipdistance.csv";
 
-    public class Location {
-        private int zipcode;
-        public Location() {}
-        public Location(int zip) {zipcode = zip;}
-        public int getZipcode() {return zipcode;}
-        public void setZipcode(int zip) {zipcode = zip;}
-    }
-
     public GraphEngine() {
 
         try {
@@ -55,9 +47,10 @@ public class GraphEngine {
     }
 
     public void initDB() {
+        boolean load = !orient.exists(databaseName);
         orient.createIfNotExists(databaseName, ODatabaseType.PLOCAL);
         ODatabaseSession db = createSession(orient);
-        /* Custom classes go here brrrr */
+
         if (db.getClass("Zip") == null) {
             OClass zip = db.createVertexClass("Zip");
             zip.createProperty("zipcode", OType.INTEGER);
@@ -66,8 +59,7 @@ public class GraphEngine {
             OClass distance = db.createEdgeClass("Distance");
             distance.createProperty("distance", OType.FLOAT);
         }
-        db.close();
-        loadData();
+        if (load) loadData();
     }
 
     public void resetDB() {

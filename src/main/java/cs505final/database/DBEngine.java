@@ -22,37 +22,23 @@ public class DBEngine {
 
     private DataSource ds;
     private String hospitalFile = "./data/hospitals.csv";
+    private String databaseName = "reporting_app";
+    private static String databaseUserName = "root";
+    private static String databasePassword = "rootpwd";
+
+    /*
+    *   TODO: Going to replace this thing with a MySQL database, just to make things easier for me to see/manage
+    *
+    *   We'll also be able to pre-load data in the same way as the GraphEngine
+    *
+    * */
 
     public DBEngine() {
-
         try {
-            //Name of database  TODO: May need to change the database and specification.
-            String databaseName = "myDatabase";
-
-            //Driver needs to be identified in order to load the namespace in the JVM
-            String dbDriver = "org.apache.derby.jdbc.EmbeddedDriver";
-            Class.forName(dbDriver).newInstance();
-
-            //Connection string pointing to a local file location
-            String dbConnectionString = "jdbc:derby:memory:" + databaseName + ";create=true";
+            String dbConnectionString = "jdbc:mysql://localhost:3306/" + databaseName;
             ds = setupDataSource(dbConnectionString);
-
-            /*
-            if(!databaseExist(databaseName)) {
-                System.out.println("No database, creating " + databaseName);
-                initDB();
-            } else {
-                System.out.println("Database found, removing " + databaseName);
-                delete(Paths.get(databaseName).toFile());
-                System.out.println("Creating " + databaseName);
-                initDB();
-            }
-             */
-
-            initDB();
-        }
-
-        catch (Exception ex) {
+            resetDB();
+        } catch (Exception ex) {
             ex.printStackTrace();
         }
 
@@ -67,7 +53,7 @@ public class DBEngine {
         // arguments.
         //
         ConnectionFactory connectionFactory = null;
-        connectionFactory = new DriverManagerConnectionFactory(connectURI, null);
+        connectionFactory = new DriverManagerConnectionFactory(connectURI, databaseUserName, databasePassword);
 
 
         //
@@ -103,17 +89,122 @@ public class DBEngine {
 
     public void initDB() {
         /* TODO Change table schema */
-        String createRNode = "CREATE TABLE accesslog" +
+        String hospitalTableCreate = "CREATE TABLE IF NOT EXISTS hospitals" +
                 "(" +
-                "   remote_ip varchar(255)," +
-                "   access_ts bigint" +
+                "   id bigint," +
+                "   hospital_name varchar(255)," +
+                "   address varchar(255)," +
+                "   city varchar(255)," +
+                "   state varchar(255)," +
+                "   zip int," +
+                "   type varchar(255)," +
+                "   beds int," +
+                "   county varchar(255)," +
+                "   countyfips int," +
+                "   country varchar(255)," +
+                "   latitude float," +
+                "   longitude float," +
+                "   naics_code int," +
+                "   website varchar(255)," +
+                "   hospital_owner varchar(255)," +
+                "   trauma varchar(255)," +
+                "   helipad varchar(255)," +
+                "   PRIMARY KEY(id)" +
                 ")";
 
+        String patientTableCreate = "CREATE TABLE IF NOT EXISTS patients" +
+                "(" +
+                "   id bigint not null auto_increment," +
+                "   first_name varchar(255)," +
+                "   last_name varchar(255)," +
+                "   mrn varchar(255)," +
+                "   zip int," +
+                "   patient_status_code int," +
+                "   PRIMARY KEY(id)," +
+                "   INDEX mrn_idx(mrn)" +
+                ")";
         try {
             try(Connection conn = ds.getConnection()) {
                 try (Statement stmt = conn.createStatement()) {
-                    stmt.executeUpdate(createRNode);
-                    loadData();
+                    stmt.executeUpdate(hospitalTableCreate);
+                    stmt.executeUpdate(patientTableCreate);
+                }
+            }
+        } catch(Exception ex) {
+            ex.printStackTrace();
+        }
+        loadData();
+    }
+
+    public void resetDB() {
+        /* TODO Change table schema
+        * Also this should be dropping the database and then calling init. No need to redo everything
+        * */
+        dropTable("hospitals");
+        dropTable("patients");
+        initDB();
+    }
+
+    public void loadData() {
+        List<Map<String, String>> hospitalData = Launcher.readCsvData(hospitalFile);
+        /*
+        * TODO: Come up with way to insert data. May need to capitalize table fields to make this easier
+        *
+        * */
+        for( Map<String, String> hospital : hospitalData ) {
+            insertHospital(hospital);
+        }
+    }
+
+    public void insertHospital(Map<String, String> record) {
+        String query = "INSERT INTO hospitals " +
+                "(" +
+                "   id ," +
+                "   hospital_name ," +
+                "   address ," +
+                "   city ," +
+                "   state ," +
+                "   zip ," +
+                "   type ," +
+                "   beds ," +
+                "   county ," +
+                "   countyfips ," +
+                "   country ," +
+                "   latitude , " +
+                "   longitude , " +
+                "   naics_code ," +
+                "   website ," +
+                "   hospital_owner ," +
+                "   trauma ," +
+                "   helipad " +
+                ") " +
+                " VALUES (\"%s\",\"%s\",\"%s\",\"%s\",\"%s\",\"%s\",\"%s\",\"%s\",\"%s\",\"%s\",\"%s\",\"%s\",\"%s\",\"%s\",\"%s\",\"%s\",\"%s\",\"%s\")";
+
+        System.out.println(record);
+        String preparedQuery = String.format( query,
+                record.get("ID"),
+                record.get("NAME"),
+                record.get("ADDRESS"),
+                record.get("CITY"),
+                record.get("STATE"),
+                record.get("ZIP"),
+                record.get("TYPE"),
+                record.get("BEDS"),
+                record.get("COUNTY"),
+                record.get("COUNTYFIPS"),
+                record.get("COUNTRY"),
+                record.get("LATITUDE"),
+                record.get("LONGITUDE"),
+                record.get("NAICS_CODE"),
+                record.get("WEBSITE"),
+                record.get("OWNER"),
+                record.get("TRAUMA"),
+                record.get("HELIPAD")
+        );
+        try {
+            try(Connection conn = ds.getConnection()) {
+                try (Statement stmt = conn.createStatement()) {
+                    stmt.executeUpdate(preparedQuery);
                 }
             }
         } catch(Exception ex) {
@@ -121,17 +212,14 @@ public class DBEngine {
         }
     }
 
-    public void resetDB() {
-        /* TODO Change table schema
-        * Also this should be dropping the database and then calling init. No need to redo everything
+    public int insertPatient() {
+        /*
+        * TODO:
+        *   this one might be different. May need to check to see if the patient exists first
+        *
         * */
-        dropTable("SampleTablename");
-        initDB();
-        loadData();
-    }
-
-    public void loadData() {
-        List<Map<String, String>> hospitalData = Launcher.readCsvData(hospitalFile);
+        String query = "";
+        return 0;
     }
 
     void delete(File f) throws IOException {
@@ -141,6 +229,27 @@ public class DBEngine {
         }
         if (!f.delete())
             throw new FileNotFoundException("Failed to delete file: " + f);
+    }
+
+    public int executeInsert(String stmtString) {
+        int result = -1;
+        try {
+            Connection conn = ds.getConnection();
+            try {
+                Statement stmt = conn.createStatement();
+                result = stmt.executeUpdate(stmtString);  // TODO: Change to insert
+                stmt.close();
+            } catch (Exception e) {
+
+                e.printStackTrace();
+            } finally {
+                conn.close();
+            }
+
+        } catch(Exception ex) {
+            ex.printStackTrace();
+        }
+        return  result;
     }
 
     public int executeUpdate(String stmtString) {

@@ -141,11 +141,31 @@ public class Launcher {
         }
         Scanner sc = new Scanner(dataFile);
         String[] header = sc.nextLine().split(",");
+        String fixed_header;
+        for (int i = 0; i < header.length; i++){
+            fixed_header = header[i].replaceAll("(\\W)", ""); //Removing illegal chars
+            header[i] = fixed_header;
+        }
         while (sc.hasNextLine()) {
             String[] dataLine = sc.nextLine().split(",");
             Map<String, String> line = new HashMap<String, String>();
             for (int i = 0; i < header.length; i++) {
-                line.put(header[i], dataLine[i]);
+                if (
+                        (dataLine[0].equals("11640536") && header[i].contains("TRAUMA"))
+                    ||  (dataLine[0].equals("5342025")  && header[i].contains("ADDRESS"))
+                    ||  (dataLine[0].equals("8742642")  && header[i].contains("ADDRESS"))
+                ) {
+                    // There's one line in the hospitals csv where the field has commas. Need to fix that.
+                    StringBuilder fixed_line = new StringBuilder().append(dataLine[i].replaceAll("\"", "")).append(",");
+                    for (int j = i + 1; j < i + 2; j++) {
+                        fixed_line.append(dataLine[j].replaceAll("\"",""));
+                    }
+                    line.put(header[i], fixed_line.toString());
+                    line.put(header[i+1], dataLine[dataLine.length -1]);
+                    i = i + 2;
+                } else {
+                    line.put(header[i], dataLine[i]);
+                }
             }
             response.add(line);
         }
