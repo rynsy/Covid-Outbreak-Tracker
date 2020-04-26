@@ -2,9 +2,12 @@ package cs505final.graph;
 
 import com.orientechnologies.orient.core.config.OGlobalConfiguration;
 import com.orientechnologies.orient.core.db.*;
+import com.orientechnologies.orient.core.db.record.OIdentifiable;
 import com.orientechnologies.orient.core.id.ORID;
+import com.orientechnologies.orient.core.index.OIndex;
 import com.orientechnologies.orient.core.metadata.schema.OClass;
 import com.orientechnologies.orient.core.metadata.schema.OType;
+import com.orientechnologies.orient.core.record.ODirection;
 import com.orientechnologies.orient.core.record.OEdge;
 import com.orientechnologies.orient.core.record.OElement;
 import com.orientechnologies.orient.core.record.OVertex;
@@ -12,9 +15,11 @@ import com.orientechnologies.orient.core.sql.OCommandSQL;
 import com.orientechnologies.orient.core.sql.executor.OResult;
 import com.orientechnologies.orient.core.sql.executor.OResultSet;
 import cs505final.Launcher;
+import sun.security.provider.certpath.Vertex;
 
 import java.util.*;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public class GraphEngine {
 
@@ -54,6 +59,7 @@ public class GraphEngine {
         if (db.getClass("Zip") == null) {
             OClass zip = db.createVertexClass("Zip");
             zip.createProperty("zipcode", OType.INTEGER);
+            zip.createIndex("Zip.zipcode", OClass.INDEX_TYPE.UNIQUE, "zipcode");
         }
         if (db.getClass("Distance") == null) {
             OClass distance = db.createEdgeClass("Distance");
@@ -73,15 +79,31 @@ public class GraphEngine {
 
     }
 
-    public int adjacent(int zip) {
+    public int[] adjacent(int zip, int starting_at, int num_results) {
        /*
-       * TODO:
-       *  I'm thinking we'll need a way to look up all the zips adjacent to a zipcode, and return them ordered from
-       * closest to furthest.
        *
+       * Because of the index, the iterator returns zipcodes from closest to furthest. Returning this in an array in
+       * controlled batches so that we don't run an expensive query unnecessarily.
+       *
+       * starting_at allows you to skip over the first few results if you've already checked them. This may not be the
+       * most efficient way of doing things, but I can at least pull in zipcodes in batches this way.
        *
        * */
-        return 0;
+        ODatabaseSession db = createSession(orient);
+        int[] zipcodes = new int[num_results];
+        OIndex<?> zipIdx = db.getMetadata().getIndexManager().getIndex("Zip.zipcode");
+        OIdentifiable zipV = (OIdentifiable) zipIdx.get(zip);
+        OVertex zipVertex = zipV.getRecord();
+        Iterator<OEdge> edgeList = zipVertex.getEdges(ODirection.OUT).iterator();
+        for(int i = 0; i < starting_at; i++) edgeList.next();
+        for (int i = 0; i < num_results; i++) {
+            OEdge edge = edgeList.next();
+            Integer dest = edge.getTo().getProperty("zipcode");
+            Float dist = edge.getProperty("distance");
+            zipcodes[i] = dest;
+        }
+        db.close();
+        return zipcodes;
     }
 
     /*

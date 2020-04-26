@@ -89,12 +89,19 @@ public class Launcher {
         System.out.println("RelationalDB Started...");
     }
 
+    public static void test() {
+//        int[] testarray = graphEngine.adjacent(42320, 10);
+        boolean test = dbEngine.getHospitalAvailability(2240004);
+        System.out.println(test);
+    }
+
     public static void main(String[] args) throws IOException {
 
         initCEP();
         initGraphDb();
         initDb();
 
+        test();
         //starting Collector
         topicConnector = new TopicConnector();
         topicConnector.connect();
