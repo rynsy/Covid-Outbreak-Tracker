@@ -149,21 +149,28 @@ public class Launcher {
         while (sc.hasNextLine()) {
             String[] dataLine = sc.nextLine().split(",");
             Map<String, String> line = new HashMap<String, String>();
-            for (int i = 0; i < header.length; i++) {
-                if (
-                        (dataLine[0].equals("11640536") && header[i].contains("TRAUMA"))
-                    ||  (dataLine[0].equals("5342025")  && header[i].contains("ADDRESS"))
-                    ||  (dataLine[0].equals("8742642")  && header[i].contains("ADDRESS"))
-                ) {
-                    // There's one line in the hospitals csv where the field has commas. Need to fix that.
-                    StringBuilder fixed_line = new StringBuilder().append(dataLine[i].replaceAll("\"", "")).append(",");
-                    for (int j = i + 1; j < i + 2; j++) {
-                        fixed_line.append(dataLine[j].replaceAll("\"",""));
+
+            /*
+            *  Fix for entries in the CSV that contain commas
+            * */
+            if (dataLine[0].equals("11640536") || dataLine[0].equals("5342025") || dataLine[0].equals("8742642")) {
+                int h = 0;
+                for (int i = 0; i < dataLine.length; i++) {
+                    if ( (dataLine[0].equals("11640536")  && header[h].contains("TRAUMA"))
+                            || (dataLine[0].equals("5342025") && header[h].contains("ADDRESS"))
+                            || (dataLine[0].equals("8742642") && header[h].contains("ADDRESS"))) {
+                        String fixed_line = new StringBuilder()
+                                .append(dataLine[i].replaceAll("\"", "")).append(",")
+                                .append(dataLine[i+1].replaceAll("\"", "")).toString();
+                        line.put(header[h], fixed_line);
+                        i += 1;
+                    } else {
+                        line.put(header[h], dataLine[i]);
                     }
-                    line.put(header[i], fixed_line.toString());
-                    line.put(header[i+1], dataLine[dataLine.length -1]);
-                    i = i + 2;
-                } else {
+                    h++;
+                }
+            } else {
+                for (int i = 0; i < header.length; i++) {
                     line.put(header[i], dataLine[i]);
                 }
             }
