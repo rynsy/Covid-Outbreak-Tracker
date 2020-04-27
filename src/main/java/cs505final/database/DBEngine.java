@@ -250,24 +250,42 @@ public class DBEngine {
         JsonObject patient = jsonElem.getAsJsonObject();
 
         System.out.println(patient);
-        String preparedQuery = String.format( query,
+        String insertPatientQuery = String.format( query,
                 patient.get("first_name"),
                 patient.get("last_name"),
                 patient.get("mrn"),
                 patient.get("zip_code"),
                 patient.get("patient_status_code")
         );
-        ResultSet result = executeQuery(preparedQuery);  // TODO: Get ID of record just inserted
+        String selectPatientIdQuery = String.format("" +
+                 "SELECT id FROM patients WHERE mrn = %s", patient.get("mrn"));
+        int pid = -1, result = -1;
         try {
-            int pid = result.getInt("id");
-        } catch (SQLException e) {
-            e.printStackTrace();
+            Connection conn = ds.getConnection();
+            try {
+                Statement stmt = conn.createStatement();
+                result = stmt.executeUpdate(insertPatientQuery);
+                if (result > 0) {
+                    ResultSet idResult = stmt.executeQuery(selectPatientIdQuery);
+                    while (idResult.next()) {
+                        pid = idResult.getInt(1);
+                    }
+                }
+                stmt.close();
+            } catch (Exception e) {
+
+                e.printStackTrace();
+            } finally {
+                conn.close();
+            }
+
+        } catch(Exception ex) {
+            ex.printStackTrace();
         }
-        setPatientLocation("0", "-1"); // Put in patient ID
-        /*
-        * TODO: Insert patient_location with -1
-        *
-        * */
+        // TODO: Get it to insert a patient and update this table
+        if (pid > 0) {
+            setPatientLocation(pid, -1); // Put in patient ID
+        }
     }
 
     public int getPatientId(String mrn) {
@@ -281,7 +299,7 @@ public class DBEngine {
         return -1;
     }
 
-    public void setPatientLocation(String patientId, String locationId) {
+    public void setPatientLocation(int patientId, int locationId) {
         int result = -1;
         String query = String.format(
                 "INSERT INTO patient_location (patient_id, hospital_id) VALUES (%s, %s)",
