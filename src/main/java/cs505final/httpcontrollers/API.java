@@ -43,7 +43,7 @@ public class API {
     *  TODO: This may need to drop the auth API key
     * */
     @GET
-    @Path("/mf1")
+    @Path("/getteam")
     @Produces(MediaType.APPLICATION_JSON)
     public Response getTeamName(@HeaderParam("X-Auth-API-Key") String authKey) {
         String responseString = "{}";
@@ -53,37 +53,38 @@ public class API {
         return Response.ok(responseString).header("Access-Control-Allow-Origin", "*").build();
     }
 
-    /*
-    * TODO this needs to return an actual status. And needs to call all the database components
-    *
-    * The data that doesn't change doesn't need to be reloaded.
-    *
-    * You're not going to store patient counts in the graph database (or don't have to), and resetting
-    * the app would be much faster if you just loaded the graph database once and then didn't do it again.
-    *
-    * */
     @GET
-    @Path("/mf2")
+    @Path("/reset")
     @Produces(MediaType.APPLICATION_JSON)
     public Response resetApp(@HeaderParam("X-Auth-API-Key") String authKey) {
         String responseString = "{}";
         Map<String,String> responseMap = new HashMap<>();
         responseMap.put("team_name","RAYN");
         responseString = gson.toJson(responseMap);
+
+        Launcher.dbEngine.resetDB();
+        /*
+        * TODO: Need to reset CEP, but don't need to reset the graph
+        *
+        * */
+
         return Response.ok(responseString).header("Access-Control-Allow-Origin", "*").build();
     }
 
-    /*
-     * TODO Does this even need to be here? Maybe the subscriber returns this. Same for other RTR functions
-     * */
     @GET
-    @Path("/rtr1")
+    @Path("/zipalertlist")
     @Produces(MediaType.APPLICATION_JSON)
     public Response alertOnZip(@HeaderParam("X-Auth-API-Key") String authKey) {
         String responseString = "{}";
         Map<String,String> responseMap = new HashMap<>();  
             //Launcher.cepEngine.input(Launcher.inputStreamName, inputEvent); // NOTE: This is how you'll access the components
         responseMap.put("team_name","RAYN");
+
+       /*
+       *
+       * Todo, need to query the CEP for zipcodes that meet the criteria and return them
+       * */
+
         responseString = gson.toJson(responseMap);
         return Response.ok(responseString).header("Access-Control-Allow-Origin", "*").build();
     }
@@ -92,7 +93,7 @@ public class API {
      * TODO Does this even need to be here? Maybe the subscriber returns this. Same for other RTR functions
      * */
     @GET
-    @Path("/rtr2")
+    @Path("/alertlist")
     @Produces(MediaType.APPLICATION_JSON)
     public Response alertOnState(@HeaderParam("X-Auth-API-Key") String authKey) {
         String responseString = "{}";
@@ -106,19 +107,23 @@ public class API {
      * TODO Does this even need to be here? Maybe the subscriber returns this. Same for other RTR functions
      * */
     @GET
-    @Path("/rtr3")
+    @Path("/testcount")
     @Produces(MediaType.APPLICATION_JSON)
     public Response stateCounter(@HeaderParam("X-Auth-API-Key") String authKey) {
         String responseString = "{}";
         Map<String,String> responseMap = new HashMap<>();
         responseMap.put("team_name","RAYN");
+
+        /*
+        * This one I'm unsure about. I believe the CEP for this will be downstream of the other one and listening for
+        * Count events from it. Don't know how to chain these CEPs together (yet)
+        *
+        * */
+
         responseString = gson.toJson(responseMap);
         return Response.ok(responseString).header("Access-Control-Allow-Origin", "*").build();
     }
 
-    /*
-     * TODO Does this even need to be here? Maybe the subscriber returns this. Same for other RTR functions
-     * */
     @GET
     @Path("/of1")
     @Produces(MediaType.APPLICATION_JSON)
@@ -126,34 +131,52 @@ public class API {
         String responseString = "{}";
         Map<String,String> responseMap = new HashMap<>();
         responseMap.put("team_name","RAYN");
+
+        /*
+        * TODO: Parse out zip or mrn from request and use it to call the relationalDB
+        *
+        * */
+
+        int hospitalId = Launcher.dbEngine.getClosestAvailableHospital("");
+
         responseString = gson.toJson(responseMap);
         return Response.ok(responseString).header("Access-Control-Allow-Origin", "*").build();
     }
 
-    /*
-     * TODO Does this even need to be here? Maybe the subscriber returns this. Same for other RTR functions
-     * */
     @GET
-    @Path("/of2")
+    @Path("/getpatient")
     @Produces(MediaType.APPLICATION_JSON)
     public Response searchByMRN(@HeaderParam("X-Auth-API-Key") String authKey) {
         String responseString = "{}";
         Map<String,String> responseMap = new HashMap<>();
         responseMap.put("team_name","RAYN");
+
+        /*
+        * TODO: Need to parse out mrn from request
+        *
+        * */
+
+        int hospitalId = Launcher.dbEngine.getPatientLocation("");
+
         responseString = gson.toJson(responseMap);
         return Response.ok(responseString).header("Access-Control-Allow-Origin", "*").build();
     }
 
-    /*
-     * TODO Does this even need to be here? Maybe the subscriber returns this. Same for other RTR functions
-     * */
     @GET
-    @Path("/of3")
+    @Path("/gethospital")
     @Produces(MediaType.APPLICATION_JSON)
     public Response hospitalPatientNumber(@HeaderParam("X-Auth-API-Key") String authKey) {
         String responseString = "{}";
         Map<String,String> responseMap = new HashMap<>();
         responseMap.put("team_name","RAYN");
+        /*
+        * return total_beds, available_beds, zipcode
+        *
+        * */
+        int totalBeds = Launcher.dbEngine.getHospitalBedCount(0);
+        int availableBeds = Launcher.dbEngine.getHospitalAvailableBeds(0);
+        int zipcode = Launcher.dbEngine.getHospitalZipCode(0);
+
         responseString = gson.toJson(responseMap);
         return Response.ok(responseString).header("Access-Control-Allow-Origin", "*").build();
     }

@@ -64,7 +64,7 @@ public class TopicConnector {
                     String payload = gson.toJson(map);
                     Launcher.cepEngine.input(Launcher.inputStreamName, payload);
                     Launcher.dbEngine.input(payload);
-                    Launcher.graphEngine.input(payload);
+                    //Launcher.graphEngine.input(payload);
                 }
                 System.out.println("");
                 System.out.println("");

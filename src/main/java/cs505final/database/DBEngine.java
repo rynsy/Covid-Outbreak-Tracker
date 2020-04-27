@@ -21,9 +21,7 @@ import java.util.Map;
 
 
 public class DBEngine {
-
     private DataSource ds;
-    private String hospitalFile = "./data/hospitals.csv";
     private String databaseName = "reporting_app";
     private static String databaseUserName = "root";
     private static String databasePassword = "rootpwd";
@@ -105,7 +103,7 @@ public class DBEngine {
     }
 
     public void loadData() {
-        List<Map<String, String>> hospitalData = Launcher.readCsvData(hospitalFile);
+        List<Map<String, String>> hospitalData = Launcher.readCsvData(Launcher.hospitalFile);
         for( Map<String, String> hospital : hospitalData ) {
             insertHospital(hospital);
         }
@@ -234,6 +232,14 @@ public class DBEngine {
         executeUpdate(preparedQuery);
     }
 
+    public boolean patientNeedsHospital(int statusCode) {
+        return statusCode == 3 || statusCode == 5 || statusCode == 6;
+    }
+
+    public boolean patientCritical(int statusCode) {
+        return statusCode == 6;
+    }
+
     public void insertPatient(String jsonPayload) {
         String query = "INSERT INTO patients " +
                 "(" +
@@ -249,7 +255,6 @@ public class DBEngine {
         JsonElement jsonElem= parser.parse(jsonPayload);
         JsonObject patient = jsonElem.getAsJsonObject();
 
-        System.out.println(patient);
         String insertPatientQuery = String.format( query,
                 patient.get("first_name"),
                 patient.get("last_name"),
@@ -284,29 +289,64 @@ public class DBEngine {
         }
         // TODO: Get it to insert a patient and update this table
         if (pid > 0) {
-            setPatientLocation(pid, -1); // Put in patient ID
+            int statusCode =  patient.get("patient_status_code").getAsInt();
+            if (!patientNeedsHospital(statusCode)) {
+                setPatientLocation(pid, 0); // Put in patient ID
+            } else {
+                int hid = getClosestAvailableHospital(patient.get("mrn").getAsString());
+                setPatientLocation(pid, hid); // Put in patient ID
+            }
         }
     }
 
-    public int getPatientId(String mrn) {
-        String query = String.format("SELECT id FROM patients WHERE mrn = %s", mrn);
-        ResultSet result = executeQuery(query);
+    public int getPatientZip(String mrn) {
+        String query = String.format("SELECT zip FROM patients WHERE mrn = '%s'", mrn);
+        int patientZip = -1;
+        ResultSet result;
         try {
-            return result.getInt("id");
-        } catch (SQLException e) {
-            e.printStackTrace();
+            Connection conn = ds.getConnection();
+            try {
+                Statement stmt = conn.createStatement();
+                result = stmt.executeQuery(query);
+                while (result.next()) {
+                    patientZip = result.getInt(1);
+                }
+                stmt.close();
+            } catch (Exception e) {
+
+                e.printStackTrace();
+            } finally {
+                conn.close();
+            }
+
+        } catch(Exception ex) {
+            ex.printStackTrace();
         }
-        return -1;
+        return patientZip;
     }
 
-    public void setPatientLocation(int patientId, int locationId) {
+    public int setPatientLocation(int patientId, int locationId) {
         int result = -1;
         String query = String.format(
                 "INSERT INTO patient_location (patient_id, hospital_id) VALUES (%s, %s)",
                 patientId, locationId);
-        result = executeUpdate(query);
-        if(result != -1)
-            System.out.println(result);  //TODO: Check the count?
+        try {
+            Connection conn = ds.getConnection();
+            try {
+                Statement stmt = conn.createStatement();
+                result = stmt.executeUpdate(query);
+                stmt.close();
+            } catch (Exception e) {
+
+                e.printStackTrace();
+            } finally {
+                conn.close();
+            }
+
+        } catch(Exception ex) {
+            ex.printStackTrace();
+        }
+        return result;
     }
 
     public int getPatientLocation(String mrn) {
@@ -341,7 +381,7 @@ public class DBEngine {
         ResultSet result;
         int patientStatusCode = -1;
         String query = String.format(
-                "SELECT patient_status_code FROM patients WHERE mrn = %s",
+                "SELECT patient_status_code FROM patients WHERE mrn = \"%s\"",
                 mrn);
         try {
             Connection conn = ds.getConnection();
@@ -499,26 +539,24 @@ public class DBEngine {
 
     public int getClosestAvailableHospital(String mrn) {
         /**
-         * 1. Look up patient zipcode using mrn
-         * 2. Look up adjacent zipcodes through graphengine
-         * 3. Check hospital bed number vs. count to determine availability
+         *
+         * Retrieves a batch of zipcodes and checks hospitals in each zipcode for availability
          */
-        int patient_zip = getPatientId(mrn);
         int batch_size = 5;
-        int position = 0;
+        int patient_zip = getPatientZip(mrn);
         int patient_status = getPatientStatus(mrn);
-        boolean high_level_facility = patient_status == 6;
-        while(position < 730) { //TODO: Don't hard-code this, but I don't know how else to do this for now
-            int[] adjacent_zipcodes = Launcher.graphEngine.adjacent(patient_zip, position, batch_size); // May need to change this number/method to check more locations
-            for (int i = 0; i < adjacent_zipcodes.length; i++) {
-                List<Integer> hospital_ids = findHospitalByZip(patient_zip, high_level_facility);
-                for (int id : hospital_ids) {
-                    if (getHospitalAvailability(id)) {
-                        return id;
-                    }
+        boolean high_level_facility = patientCritical(patient_status);
+        int[] adjacent_zipcodes = Launcher.graphEngine.adjacent(patient_zip, batch_size);
+        if( adjacent_zipcodes[0] == 0 ) {
+            return -1;
+        }
+        for (int i = 0; i < adjacent_zipcodes.length; i++) {
+            List<Integer> hospital_ids = findHospitalByZip(patient_zip, high_level_facility);
+            for (int id : hospital_ids) {
+                if (getHospitalAvailability(id)) {
+                    return id;
                 }
             }
-            position += batch_size;
         }
         return -1;
     }

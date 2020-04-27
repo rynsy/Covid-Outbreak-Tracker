@@ -12,9 +12,9 @@ import java.util.concurrent.ConcurrentHashMap;
 
 public class CEPEngine {
 
-    private SiddhiManager siddhiManager;
-    private SiddhiAppRuntime siddhiAppRuntime;
-    private Map<String,String> topicMap;
+    public SiddhiManager siddhiManager;
+    public SiddhiAppRuntime siddhiAppRuntime;
+    public Map<String,String> topicMap;
 
 
     private Gson gson;

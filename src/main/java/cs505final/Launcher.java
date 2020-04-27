@@ -5,6 +5,13 @@ import cs505final.graph.GraphEngine;
 import cs505final.database.DBEngine;
 import cs505final.Topics.TopicConnector;
 import cs505final.httpfilters.AuthenticationFilter;
+import io.siddhi.core.event.Event;
+import io.siddhi.core.stream.output.StreamCallback;
+import io.siddhi.core.stream.output.sink.InMemorySink;
+import io.siddhi.core.stream.output.sink.Sink;
+import io.siddhi.core.stream.output.sink.SinkHandler;
+import io.siddhi.core.util.EventPrinter;
+import io.siddhi.core.util.transport.InMemoryBroker;
 import org.glassfish.grizzly.http.server.HttpServer;
 import org.glassfish.jersey.grizzly2.httpserver.GrizzlyHttpServerFactory;
 import org.glassfish.jersey.server.ResourceConfig;
@@ -30,6 +37,8 @@ public class Launcher {
     public static GraphEngine graphEngine = null;
     public static DBEngine dbEngine = null;
 
+    public static String distanceFile = "./data/kyzipdistance.csv";
+    public static String hospitalFile = "./data/hospitals.csv";
    /*
    * TODO: FIX ORANIZATION
    *
@@ -90,9 +99,7 @@ public class Launcher {
     }
 
     public static void test() {
-//        int[] testarray = graphEngine.adjacent(42320, 10);
-        boolean test = dbEngine.getHospitalAvailability(2240004);
-        System.out.println(test);
+        int[] testarray = graphEngine.adjacent(42320, 5);
     }
 
     public static void main(String[] args) throws IOException {
@@ -158,7 +165,8 @@ public class Launcher {
             Map<String, String> line = new HashMap<String, String>();
 
             /*
-            *  Fix for entries in the CSV that contain commas
+            *  Fix for entries in the CSV that contain commas (TODO: can just look for \" at the beginning of element and
+            *                                                   read until element that ends with \"
             * */
             if (dataLine[0].equals("11640536") || dataLine[0].equals("5342025") || dataLine[0].equals("8742642")) {
                 int h = 0;
