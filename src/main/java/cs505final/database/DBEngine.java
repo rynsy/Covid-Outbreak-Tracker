@@ -309,6 +309,62 @@ public class DBEngine {
             System.out.println(result);  //TODO: Check the count?
     }
 
+    public int getPatientLocation(String mrn) {
+        ResultSet result;
+        int patientLocationId = -1;
+        String query = String.format(
+                "SELECT hospital_id FROM patient_location JOIN patients ON id = patient_id WHERE mrn = %s",
+                mrn);
+        try {
+            Connection conn = ds.getConnection();
+            try {
+                Statement stmt = conn.createStatement();
+                result = stmt.executeQuery(query);
+                while (result.next()) {
+                    patientLocationId = result.getInt(1);
+                }
+                stmt.close();
+            } catch (Exception e) {
+
+                e.printStackTrace();
+            } finally {
+                conn.close();
+            }
+
+        } catch(Exception ex) {
+            ex.printStackTrace();
+        }
+        return patientLocationId;
+    }
+
+    public int getPatientStatus(String mrn) {
+        ResultSet result;
+        int patientStatusCode = -1;
+        String query = String.format(
+                "SELECT patient_status_code FROM patients WHERE mrn = %s",
+                mrn);
+        try {
+            Connection conn = ds.getConnection();
+            try {
+                Statement stmt = conn.createStatement();
+                result = stmt.executeQuery(query);
+                while (result.next()) {
+                    patientStatusCode = result.getInt(1);
+                }
+                stmt.close();
+            } catch (Exception e) {
+
+                e.printStackTrace();
+            } finally {
+                conn.close();
+            }
+
+        } catch(Exception ex) {
+            ex.printStackTrace();
+        }
+        return patientStatusCode;
+    }
+
     public int getHospitalPatientCount(int hospitalId) {
         ResultSet result;
         int patientcount = -1;
@@ -365,18 +421,57 @@ public class DBEngine {
         return bedcount;
     }
 
+    public int getHospitalZipCode(int hospitalId) {
+        ResultSet result;
+        int zipcode = -1;
+        String query = String.format(
+                "SELECT zip FROM hospitals WHERE id = %s",
+                hospitalId);
+        try {
+            Connection conn = ds.getConnection();
+            try {
+                Statement stmt = conn.createStatement();
+                result = stmt.executeQuery(query);
+                while (result.next()) {
+                    zipcode = result.getInt(1);
+                }
+                stmt.close();
+            } catch (Exception e) {
+
+                e.printStackTrace();
+            } finally {
+                conn.close();
+            }
+
+        } catch(Exception ex) {
+            ex.printStackTrace();
+        }
+        return zipcode;
+    }
+
     public boolean getHospitalAvailability(int hospitalId) {
         return getHospitalBedCount(hospitalId) > getHospitalPatientCount(hospitalId);
     }
 
-    public List<Integer> findHospitalByZip(int zipcode) {
+    public int getHospitalAvailableBeds(int hospitalId) {
+        return getHospitalBedCount(hospitalId) - getHospitalPatientCount(hospitalId);
+    }
+
+    public List<Integer> findHospitalByZip(int zipcode, boolean high_level) {
         /*
         * Return hospitals available in zipcode
         * */
         ResultSet result;
-        String query = String.format(
-                "SELECT id FROM hospitals WHERE zip = %s",
-                zipcode);
+        String query;
+        if (high_level) {
+            query = String.format(
+                    "SELECT id FROM hospitals WHERE zip = %s AND trauma LIKE '%%LEVEL%%'",
+                    zipcode);
+        } else {
+            query = String.format(
+                    "SELECT id FROM hospitals WHERE zip = %s",
+                    zipcode);
+        }
         List<Integer> hIds = new ArrayList<>();
         try {
             Connection conn = ds.getConnection();
@@ -411,10 +506,12 @@ public class DBEngine {
         int patient_zip = getPatientId(mrn);
         int batch_size = 5;
         int position = 0;
+        int patient_status = getPatientStatus(mrn);
+        boolean high_level_facility = patient_status == 6;
         while(position < 730) { //TODO: Don't hard-code this, but I don't know how else to do this for now
             int[] adjacent_zipcodes = Launcher.graphEngine.adjacent(patient_zip, position, batch_size); // May need to change this number/method to check more locations
             for (int i = 0; i < adjacent_zipcodes.length; i++) {
-                List<Integer> hospital_ids = findHospitalByZip(patient_zip);
+                List<Integer> hospital_ids = findHospitalByZip(patient_zip, high_level_facility);
                 for (int id : hospital_ids) {
                     if (getHospitalAvailability(id)) {
                         return id;
