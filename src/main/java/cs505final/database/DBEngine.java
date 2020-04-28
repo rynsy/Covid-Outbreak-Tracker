@@ -1,18 +1,12 @@
 package cs505final.database;
 
 import com.google.gson.*;
-import com.google.gson.reflect.TypeToken;
 import cs505final.Launcher;
 import org.apache.commons.dbcp2.*;
 import org.apache.commons.pool2.ObjectPool;
 import org.apache.commons.pool2.impl.GenericObjectPool;
 
 import javax.sql.DataSource;
-import javax.xml.transform.Result;
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.lang.reflect.Type;
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -23,8 +17,8 @@ import java.util.Map;
 public class DBEngine {
     private DataSource ds;
     private String databaseName = "reporting_app";
-//    private static String databaseVhost = "mysql";
-    private static String databaseVhost = "localhost";
+    private static String databaseVhost = "mysql";
+//    private static String databaseVhost = "localhost";
     private static String databaseUserName = "root";
     private static String databasePassword = "rootpwd";
 

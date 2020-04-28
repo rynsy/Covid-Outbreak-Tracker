@@ -32,6 +32,13 @@ public class TopicConnector {
             String password = "student01";
             String virtualhost = "patient_feed";
 
+            /*
+            String hostname = "rabbitmq";
+            String username = "guest";
+            String password = "guest";
+            String virtualhost = "/";
+            */
+
             ConnectionFactory factory = new ConnectionFactory();
             factory.setHost(hostname);
             factory.setUsername(username);

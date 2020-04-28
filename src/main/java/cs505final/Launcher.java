@@ -6,7 +6,6 @@ import cs505final.database.DBEngine;
 import cs505final.Topics.TopicConnector;
 import cs505final.httpfilters.AuthenticationFilter;
 import io.siddhi.core.event.Event;
-import io.siddhi.core.query.output.callback.QueryCallback;
 import io.siddhi.core.stream.output.StreamCallback;
 import io.siddhi.core.util.EventPrinter;
 import org.glassfish.grizzly.http.server.HttpServer;
@@ -38,29 +37,11 @@ public class Launcher {
     public static Map<Integer, Integer> zipCounts;
     public static Set<Integer> zipsInAlert;
 
-    /*
-   * TODO: FIX ORANIZATION
-   *
-   * CEP is initialized in Launcher
-   * DB is initialized in constructor
-   * GraphDB is initialized in constructor
-   *
-   * */
-
-
     public static void initCEP() {
         System.out.println("Starting CEP...");
-        //Embedded database initialization
-
-       /*
-       *  TODO: There's going to be two of these things
-       *   one is going to be downstream to listen/count alerts
-       *
-       * */
 
         cepEngine = new CEPEngine();
 
-        //START MODIFY
         inputStreamName = "PatientInStream";
         String inputStreamAttributesString = "first_name string, last_name string, mrn string, zip_code string, patient_status_code string";
 
@@ -88,7 +69,7 @@ public class Launcher {
                     Integer statusCode = Integer.valueOf(String.valueOf(e.getData(1)));
                     Integer total = Integer.valueOf(String.valueOf(e.getData(2)));
 
-                    if (statusCode == 5 || statusCode == 6) {   //TODO: May need to include statuscode 2
+                    if (statusCode == 2 || statusCode == 5 || statusCode == 6) {
                         if (!currentZipCount.containsKey(zipcode)) {
                             currentZipCount.put(zipcode, total);
                         } else {
@@ -101,7 +82,7 @@ public class Launcher {
                     Integer current = currentZipCount.get(zip);
                     try {
                         Integer threshold = Launcher.zipCounts.get(zip) * 2;
-                        if (current > threshold) {
+                        if (current >= threshold) {
                             Launcher.zipsInAlert.add(zip);
                         }
                     } catch (Exception ex) {
@@ -195,7 +176,9 @@ public class Launcher {
             Map<String, String> line = new HashMap<String, String>();
 
             /*
-            *  Fix for entries in the CSV that contain commas (TODO: can just look for \" at the beginning of element and
+            *  Fix for entries in the CSV that contain commas
+            *
+            * (TODO: can just look for \" at the beginning of element and
             *                                                   read until element that ends with \"
             * */
             if (dataLine[0].equals("11640536") || dataLine[0].equals("5342025") || dataLine[0].equals("8742642")) {

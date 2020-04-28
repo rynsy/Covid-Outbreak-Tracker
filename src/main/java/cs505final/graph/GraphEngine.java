@@ -1,8 +1,5 @@
 package cs505final.graph;
 
-import com.orientechnologies.orient.core.command.OCommandContext;
-import com.orientechnologies.orient.core.command.OCommandPredicate;
-import com.orientechnologies.orient.core.command.traverse.OTraverse;
 import com.orientechnologies.orient.core.config.OGlobalConfiguration;
 import com.orientechnologies.orient.core.db.*;
 import com.orientechnologies.orient.core.db.record.OIdentifiable;
@@ -11,12 +8,7 @@ import com.orientechnologies.orient.core.metadata.schema.OClass;
 import com.orientechnologies.orient.core.metadata.schema.OType;
 import com.orientechnologies.orient.core.record.ODirection;
 import com.orientechnologies.orient.core.record.OEdge;
-import com.orientechnologies.orient.core.record.ORecord;
 import com.orientechnologies.orient.core.record.OVertex;
-import com.orientechnologies.orient.core.record.impl.ODocument;
-import com.orientechnologies.orient.core.sql.executor.OResult;
-import com.orientechnologies.orient.core.sql.executor.OResultSet;
-import com.orientechnologies.orient.core.sql.filter.OSQLPredicate;
 import cs505final.Launcher;
 
 import java.util.*;
@@ -26,8 +18,8 @@ public class GraphEngine {
     private OrientDB orient;
     private ODatabasePool connectionPool;
 
-//    private static String databaseVhost = "orientdb";
-    private static String databaseVhost = "localhost";
+    private static String databaseVhost = "orientdb";
+//    private static String databaseVhost = "localhost";
     private static String databaseHost = "remote:" + databaseVhost;
     private static String databaseName = "test";
     private static String databaseUserName = "root";
