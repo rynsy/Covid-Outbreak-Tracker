@@ -82,7 +82,7 @@ public class GraphEngine {
 
     }
 
-    public int[] adjacent(int zip, int num_results) {
+    public int[] adjacent(int zip, int starting_at, int num_results) {
        /*
        *
        * Because of the index, the iterator returns zipcodes from closest to furthest. Returning this in an array in
@@ -97,12 +97,17 @@ public class GraphEngine {
         OIndex<?> zipIdx = db.getMetadata().getIndexManager().getIndex("Zip.zipcode");
         OIdentifiable zipV = (OIdentifiable) zipIdx.get(zip);
         try {
-            Iterable<OEdge> hospitalEdges = ((OVertex) zipV.getRecord()).getEdges(ODirection.OUT, db.getClass("Hospital"));
+            Iterator<OEdge> hospitalEdges = ((OVertex) zipV.getRecord()).getEdges(ODirection.OUT, db.getClass("Hospital")).iterator();
+
+            int sIndex = 0;
+            while(sIndex++ < starting_at && hospitalEdges.hasNext()) hospitalEdges.next();
+
             int zIndex = 0;
-            for (OEdge edge : hospitalEdges) {
+            while(hospitalEdges.hasNext() && zIndex < num_results) {
+                OEdge edge = hospitalEdges.next();
                 OVertex destination = edge.getTo();
                 int zipDest = destination.getProperty("zipcode");
-                zipcodes[zIndex] = zipDest;
+                zipcodes[zIndex++] = zipDest;
             }
         } catch (Exception ex) {
             // Tried to look up a zipcode that doesn't exist. Return 0

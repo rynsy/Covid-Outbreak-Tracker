@@ -99,7 +99,7 @@ public class Launcher {
     }
 
     public static void test() {
-        int[] testarray = graphEngine.adjacent(42320, 5);
+        int[] testarray = graphEngine.adjacent(40219, 0,5);
     }
 
     public static void main(String[] args) throws IOException {

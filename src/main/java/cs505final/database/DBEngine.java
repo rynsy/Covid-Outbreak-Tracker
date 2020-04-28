@@ -541,22 +541,30 @@ public class DBEngine {
         /**
          *
          * Retrieves a batch of zipcodes and checks hospitals in each zipcode for availability
+         *
+         * A lot can be done to speed this up. The traversal could all be offloaded to the graphdatabase, but that would
+         * require storing more information there. Right now it just has the distances between zips and hospitals.
          */
-        int batch_size = 5;
+        int position = 0;
+        int batch_size = 2;
         int patient_zip = getPatientZip(mrn);
         int patient_status = getPatientStatus(mrn);
         boolean high_level_facility = patientCritical(patient_status);
-        int[] adjacent_zipcodes = Launcher.graphEngine.adjacent(patient_zip, batch_size);
-        if( adjacent_zipcodes[0] == 0 ) {
-            return -1;
-        }
-        for (int i = 0; i < adjacent_zipcodes.length; i++) {
-            List<Integer> hospital_ids = findHospitalByZip(patient_zip, high_level_facility);
-            for (int id : hospital_ids) {
-                if (getHospitalAvailability(id)) {
-                    return id;
+
+        while (position + batch_size < (94 - batch_size)) {           //TODO: #hospital zipcodes - batch_size, should be programmatically retrieved
+            int[] adjacent_zipcodes = Launcher.graphEngine.adjacent(patient_zip, position, batch_size);
+            if (adjacent_zipcodes[0] == 0) {
+                return -1;
+            }
+            for (int i = 0; i < adjacent_zipcodes.length; i++) {
+                List<Integer> hospital_ids = findHospitalByZip(adjacent_zipcodes[i], high_level_facility);
+                for (int id : hospital_ids) {
+                    if (getHospitalAvailability(id)) {
+                        return id;
+                    }
                 }
             }
+            position += batch_size;
         }
         return -1;
     }
