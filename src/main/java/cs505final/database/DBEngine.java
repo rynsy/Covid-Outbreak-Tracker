@@ -23,14 +23,16 @@ import java.util.Map;
 public class DBEngine {
     private DataSource ds;
     private String databaseName = "reporting_app";
+//    private static String databaseVhost = "mysql";
+    private static String databaseVhost = "localhost";
     private static String databaseUserName = "root";
     private static String databasePassword = "rootpwd";
 
     public DBEngine() {
         try {
-            String dbConnectionString = "jdbc:mysql://localhost:3306/" + databaseName;
+            String dbConnectionString = "jdbc:mysql://" + databaseVhost + ":3306/" + databaseName;
             ds = setupDataSource(dbConnectionString);
-            resetDB();
+            initDB();
         } catch (Exception ex) {
             ex.printStackTrace();
         }
@@ -81,24 +83,14 @@ public class DBEngine {
     }
 
     public void initDB() {
-        if (!tableExist("hospitals")
-                || !tableExist("patients")
-                || !tableExist("patient_location")) {
-            createDataTables();
-            loadData();
-        }
+        createDataTables();
+        loadData();
     }
 
     public void resetDB() {
-        if (tableExist("patient_location")) {
-            dropTable("patient_location");
-        }
-        if (tableExist("hospitals")) {
-            dropTable("hospitals");
-        }
-        if (tableExist("patients")) {
-            dropTable("patients");
-        }
+        dropTable("patient_location");
+        dropTable("patients");
+        dropTable("hospitals");
         initDB();
     }
 
@@ -353,7 +345,7 @@ public class DBEngine {
         ResultSet result;
         int patientLocationId = -1;
         String query = String.format(
-                "SELECT hospital_id FROM patient_location JOIN patients ON id = patient_id WHERE mrn = %s",
+                "SELECT hospital_id FROM patient_location JOIN patients ON id = patient_id WHERE mrn = \"%s\"",
                 mrn);
         try {
             Connection conn = ds.getConnection();
@@ -403,6 +395,58 @@ public class DBEngine {
             ex.printStackTrace();
         }
         return patientStatusCode;
+    }
+
+    public int getPositiveTestCount() {
+        ResultSet result;
+        String query = "SELECT count(*) FROM patients WHERE patient_status_code IN (2,5,6)";
+        int testCount = 0;
+        try {
+            Connection conn = ds.getConnection();
+            try {
+                Statement stmt = conn.createStatement();
+                result = stmt.executeQuery(query);
+                while (result.next()) {
+                    testCount = result.getInt(1);
+                }
+                stmt.close();
+            } catch (Exception e) {
+
+                e.printStackTrace();
+            } finally {
+                conn.close();
+            }
+
+        } catch(Exception ex) {
+            ex.printStackTrace();
+        }
+        return testCount;
+    }
+
+    public int getNegativeTestCount() {
+        ResultSet result;
+        String query = "SELECT count(*) FROM patients WHERE patient_status_code IN (1,4)";
+        int testCount = 0;
+        try {
+            Connection conn = ds.getConnection();
+            try {
+                Statement stmt = conn.createStatement();
+                result = stmt.executeQuery(query);
+                while (result.next()) {
+                    testCount = result.getInt(1);
+                }
+                stmt.close();
+            } catch (Exception e) {
+
+                e.printStackTrace();
+            } finally {
+                conn.close();
+            }
+
+        } catch(Exception ex) {
+            ex.printStackTrace();
+        }
+        return testCount;
     }
 
     public int getHospitalPatientCount(int hospitalId) {
@@ -618,7 +662,34 @@ public class DBEngine {
             try {
                 String stmtString = null;
 
-                stmtString = "DROP TABLE " + tableName;
+                stmtString = "DROP TABLE IF EXISTS " + tableName;
+
+                Statement stmt = conn.createStatement();
+
+                result = stmt.executeUpdate(stmtString);
+
+                stmt.close();
+            } catch (Exception e) {
+
+                e.printStackTrace();
+            } finally {
+                conn.close();
+            }
+
+        } catch(Exception ex) {
+            ex.printStackTrace();
+        }
+        return result;
+    }
+
+    public int deleteDataFromTable(String tableName) {
+        int result = -1;
+        try {
+            Connection conn = ds.getConnection();
+            try {
+                String stmtString = null;
+
+                stmtString = "DROP FROM " + tableName + " WHERE 1=1";
 
                 Statement stmt = conn.createStatement();
 

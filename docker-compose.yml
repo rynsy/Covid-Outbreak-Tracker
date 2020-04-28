@@ -1,13 +1,11 @@
-version: '3'
+version: '3.4'
 services:
   web:
     build: .
-    hostname: final-server1
     ports:
       - "80:80"
   mysql:
     image: "mysql:5.7"
-    hostname: mysql-server1
     ports:
       - "3306:3306"
     environment:
@@ -15,13 +13,11 @@ services:
       MYSQL_DATABASE: reporting_app
   rabbitmq:
     image: "rabbitmq:3"
-    hostname: rabbit-server1
     ports:
       - "5672:5672"
       - "15672:15672"
   orientdb:
     image: "orientdb:latest"
-    hostname: orientdb-server1
     ports:
         - "2424:2424"
         - "2480:2480"

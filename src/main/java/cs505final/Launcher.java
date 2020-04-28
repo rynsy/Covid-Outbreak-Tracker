@@ -6,12 +6,8 @@ import cs505final.database.DBEngine;
 import cs505final.Topics.TopicConnector;
 import cs505final.httpfilters.AuthenticationFilter;
 import io.siddhi.core.event.Event;
+import io.siddhi.core.query.output.callback.QueryCallback;
 import io.siddhi.core.stream.output.StreamCallback;
-import io.siddhi.core.stream.output.sink.InMemorySink;
-import io.siddhi.core.stream.output.sink.Sink;
-import io.siddhi.core.stream.output.sink.SinkHandler;
-import io.siddhi.core.util.EventPrinter;
-import io.siddhi.core.util.transport.InMemoryBroker;
 import org.glassfish.grizzly.http.server.HttpServer;
 import org.glassfish.jersey.grizzly2.httpserver.GrizzlyHttpServerFactory;
 import org.glassfish.jersey.server.ResourceConfig;
@@ -27,7 +23,7 @@ import java.util.*;
 public class Launcher {
 
     public static final String API_SERVICE_KEY = "1234"; //Change this to your student id
-    public static final int WEB_PORT = 8082;
+    public static final int WEB_PORT = 80;
     public static String inputStreamName = null;
     public static long accessCount = -1;
 
@@ -39,7 +35,17 @@ public class Launcher {
 
     public static String distanceFile = "./data/kyzipdistance.csv";
     public static String hospitalFile = "./data/hospitals.csv";
-   /*
+
+    public int alertStatus = 0;
+    public Map<Integer, Integer> zipCounts;
+    public List<Integer> zipsInAlert;
+
+    public Launcher() {
+        zipCounts = new HashMap<Integer, Integer>();
+        zipsInAlert = new ArrayList<Integer>();
+    }
+
+    /*
    * TODO: FIX ORANIZATION
    *
    * CEP is initialized in Launcher
@@ -68,16 +74,23 @@ public class Launcher {
         String outputStreamName = "PatientOutStream";
         String outputStreamAttributesString = "patient_status_code string, count long";
 
-
         String queryString = " " +
                 "from PatientInStream#window.timeBatch(5 sec) " +
-                "select patient_status_code, count() as count " +
-                "group by patient_status_code " +
+                "select zip_code, count() as count " +
+                "where patient_status_code in ()" +                 //TODO: need to look up this syntax, this won't work
+                "group by zip_code " +
                 "insert into PatientOutStream; ";
 
         //END MODIFY
 
         cepEngine.createCEP(inputStreamName, outputStreamName, inputStreamAttributesString, outputStreamAttributesString, queryString);
+
+        cepEngine.siddhiAppRuntime.addCallback("PatientOutStream", new StreamCallback() {
+            @Override
+            public void receive(Event[] events) {
+                    //TODO: Process callbacks, note zips that have doubled since last call
+            }
+        });
 
         System.out.println("CEP Started...");
     }
@@ -103,19 +116,15 @@ public class Launcher {
     }
 
     public static void main(String[] args) throws IOException {
-
         initCEP();
         initGraphDb();
         initDb();
-
-        test();
         //starting Collector
         topicConnector = new TopicConnector();
         topicConnector.connect();
 
         //Embedded HTTP initialization
         startServer();
-
 
         try {
             while (true) {
@@ -129,8 +138,8 @@ public class Launcher {
     private static void startServer() throws IOException {
 
         final ResourceConfig rc = new ResourceConfig()
-        .packages("cs505cep.httpcontrollers")
-        .register(AuthenticationFilter.class);
+                .packages("cs505final.httpcontrollers")
+                .register(AuthenticationFilter.class);
 
         System.out.println("Starting Web Server...");
         URI BASE_URI = UriBuilder.fromUri("http://0.0.0.0/").port(WEB_PORT).build();
@@ -143,7 +152,6 @@ public class Launcher {
             e.printStackTrace();
         }
     }
-
 
     public static List<Map<String, String>> readCsvData(String filename)  {
         List<Map<String, String>> response = new LinkedList<Map<String,String>>();

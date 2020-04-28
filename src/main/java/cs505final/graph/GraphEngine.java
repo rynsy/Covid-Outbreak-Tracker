@@ -26,7 +26,9 @@ public class GraphEngine {
     private OrientDB orient;
     private ODatabasePool connectionPool;
 
-    private static String databaseHost = "remote:localhost";
+//    private static String databaseVhost = "orientdb";
+    private static String databaseVhost = "localhost";
+    private static String databaseHost = "remote:" + databaseVhost;
     private static String databaseName = "test";
     private static String databaseUserName = "root";
     private static String databasePassword = "rootpwd";
