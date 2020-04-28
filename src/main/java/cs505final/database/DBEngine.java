@@ -83,6 +83,12 @@ public class DBEngine {
     }
 
     public void initDB() {
+        if(tableExist("patient_location"))
+            dropTable("patient_location");
+        if(tableExist("patients"))
+            dropTable("patients");
+        if(tableExist("hospitals"))
+            dropTable("hospitals");
         createDataTables();
         loadData();
     }
@@ -102,7 +108,7 @@ public class DBEngine {
     }
 
     public void createDataTables() {
-        String hospitalTableCreate = "CREATE TABLE IF NOT EXISTS hospitals" +
+        String hospitalTableCreate = "CREATE TABLE hospitals" +
                 "(" +
                 "   id bigint," +
                 "   hospital_name varchar(255)," +
@@ -125,7 +131,7 @@ public class DBEngine {
                 "   PRIMARY KEY(id)" +
                 ")";
 
-        String patientTableCreate = "CREATE TABLE IF NOT EXISTS patients" +
+        String patientTableCreate = "CREATE TABLE patients" +
                 "(" +
                 "   id bigint not null auto_increment," +
                 "   first_name varchar(255)," +
@@ -590,7 +596,7 @@ public class DBEngine {
          * require storing more information there. Right now it just has the distances between zips and hospitals.
          */
         int position = 0;
-        int batch_size = 2;
+        int batch_size = 5;
         int patient_zip = getPatientZip(mrn);
         int patient_status = getPatientStatus(mrn);
         boolean high_level_facility = patientCritical(patient_status);

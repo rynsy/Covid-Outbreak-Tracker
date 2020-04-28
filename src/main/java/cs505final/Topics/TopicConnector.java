@@ -27,14 +27,10 @@ public class TopicConnector {
     public void connect() {
 
         try {
-/*
-*   TODO: Put in rabbitmq credentials
-*
-* */
-            String hostname = "localhost";
-            String username = "guest";
-            String password = "guest";
-            String virtualhost = "/";
+            String hostname = "128.163.202.61";
+            String username = "student";
+            String password = "student01";
+            String virtualhost = "patient_feed";
 
             ConnectionFactory factory = new ConnectionFactory();
             factory.setHost(hostname);

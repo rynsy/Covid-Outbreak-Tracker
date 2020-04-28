@@ -8,6 +8,7 @@ import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
 
 @Path("/api")
@@ -57,6 +58,8 @@ public class API {
         try {
             Launcher.dbEngine.resetDB();
             Launcher.initCEP();             // TODO: Make sure this works.
+            Launcher.zipsInAlert = new HashSet<Integer>();
+            Launcher.zipCounts = new HashMap<Integer, Integer>();
             reset = 1;
         } catch (Exception ex) {
             reset = 0;
@@ -73,16 +76,8 @@ public class API {
         String responseString = "{}";
         Map<String,String> responseMap = new HashMap<>();
 
-        /*
-        * TODO: Return list of zipcodes in alert status
-        * */
-        responseMap.put("team_name","RAYN");
-
-       /*
-       *
-       * Todo, need to query the CEP for zipcodes that meet the criteria and return them
-       * */
-
+        String result = gson.toJson(Launcher.zipsInAlert);
+        responseMap.put("ziplist", result);
         responseString = gson.toJson(responseMap);
         return Response.ok(responseString).header("Access-Control-Allow-Origin", "*").build();
     }
@@ -93,14 +88,15 @@ public class API {
     public Response alertOnState() {
         String responseString = "{}";
         Map<String,String> responseMap = new HashMap<>();
-        responseMap.put("team_name","RAYN");
 
-        /*
-        *
-        * TODO:
-        *   Just state_status:1/0 when at least 5 zips are in alert status
-        * */
+        String result = "";
+        if(Launcher.zipsInAlert.size() >= 5) {
+            result = "1";
+        } else {
+            result = "0";
+        }
 
+        responseMap.put("state_status", result);
         responseString = gson.toJson(responseMap);
         return Response.ok(responseString).header("Access-Control-Allow-Origin", "*").build();
     }

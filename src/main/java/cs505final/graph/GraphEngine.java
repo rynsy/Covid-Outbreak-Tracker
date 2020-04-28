@@ -156,7 +156,7 @@ public class GraphEngine {
             OVertex from = zipVertecies.get(d.get("zip_from"));
             OVertex to = zipVertecies.get(d.get("zip_to"));
 
-            if (hospitalZips.contains(d.get("zip_from")) || hospitalZips.contains(d.get("zip_to"))){
+            if (hospitalZips.contains(d.get("zip_to"))){
                 OEdge connection = from.addEdge(to, "Hospital");
                 connection.setProperty("distance", d.get("distance"));
                 connection.save();

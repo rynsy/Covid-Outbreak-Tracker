@@ -8,6 +8,7 @@ import cs505final.httpfilters.AuthenticationFilter;
 import io.siddhi.core.event.Event;
 import io.siddhi.core.query.output.callback.QueryCallback;
 import io.siddhi.core.stream.output.StreamCallback;
+import io.siddhi.core.util.EventPrinter;
 import org.glassfish.grizzly.http.server.HttpServer;
 import org.glassfish.jersey.grizzly2.httpserver.GrizzlyHttpServerFactory;
 import org.glassfish.jersey.server.ResourceConfig;
@@ -22,10 +23,8 @@ import java.util.*;
 
 public class Launcher {
 
-    public static final String API_SERVICE_KEY = "1234"; //Change this to your student id
-    public static final int WEB_PORT = 80;
+    public static final int WEB_PORT = 8088;
     public static String inputStreamName = null;
-    public static long accessCount = -1;
 
     public static TopicConnector topicConnector;
 
@@ -36,14 +35,8 @@ public class Launcher {
     public static String distanceFile = "./data/kyzipdistance.csv";
     public static String hospitalFile = "./data/hospitals.csv";
 
-    public int alertStatus = 0;
-    public Map<Integer, Integer> zipCounts;
-    public List<Integer> zipsInAlert;
-
-    public Launcher() {
-        zipCounts = new HashMap<Integer, Integer>();
-        zipsInAlert = new ArrayList<Integer>();
-    }
+    public static Map<Integer, Integer> zipCounts;
+    public static Set<Integer> zipsInAlert;
 
     /*
    * TODO: FIX ORANIZATION
@@ -72,13 +65,12 @@ public class Launcher {
         String inputStreamAttributesString = "first_name string, last_name string, mrn string, zip_code string, patient_status_code string";
 
         String outputStreamName = "PatientOutStream";
-        String outputStreamAttributesString = "patient_status_code string, count long";
+        String outputStreamAttributesString = "zip_code string, patient_status_code string, count long";
 
         String queryString = " " +
-                "from PatientInStream#window.timeBatch(5 sec) " +
-                "select zip_code, count() as count " +
-                "where patient_status_code in ()" +                 //TODO: need to look up this syntax, this won't work
-                "group by zip_code " +
+                "from PatientInStream#window.timeBatch(15 sec) " +
+                "select zip_code, patient_status_code, count() as count " +
+                "group by zip_code, patient_status_code " +
                 "insert into PatientOutStream; ";
 
         //END MODIFY
@@ -88,7 +80,35 @@ public class Launcher {
         cepEngine.siddhiAppRuntime.addCallback("PatientOutStream", new StreamCallback() {
             @Override
             public void receive(Event[] events) {
-                    //TODO: Process callbacks, note zips that have doubled since last call
+                EventPrinter.print(events);
+                Map<Integer, Integer> currentZipCount = new HashMap<Integer, Integer>();
+                for(int i = 0; i < events.length; i++) {
+                    Event e = events[i];
+                    Integer zipcode = Integer.valueOf(String.valueOf(e.getData(0)));
+                    Integer statusCode = Integer.valueOf(String.valueOf(e.getData(1)));
+                    Integer total = Integer.valueOf(String.valueOf(e.getData(2)));
+
+                    if (statusCode == 5 || statusCode == 6) {   //TODO: May need to include statuscode 2
+                        if (!currentZipCount.containsKey(zipcode)) {
+                            currentZipCount.put(zipcode, total);
+                        } else {
+                            int current = currentZipCount.get(zipcode);
+                            currentZipCount.put(zipcode, current+total);
+                        }
+                    }
+                }
+                for(Integer zip : currentZipCount.keySet()) {
+                    Integer current = currentZipCount.get(zip);
+                    try {
+                        Integer threshold = Launcher.zipCounts.get(zip) * 2;
+                        if (current > threshold) {
+                            Launcher.zipsInAlert.add(zip);
+                        }
+                    } catch (Exception ex) {
+                        // Do nothing, zipcode wasn't in current counts.
+                    }
+                    Launcher.zipCounts.put(zip, currentZipCount.get(zip));
+                }
             }
         });
 
@@ -116,6 +136,8 @@ public class Launcher {
     }
 
     public static void main(String[] args) throws IOException {
+        zipCounts = new HashMap<Integer, Integer>();
+        zipsInAlert = new HashSet<Integer>();
         initCEP();
         initGraphDb();
         initDb();
