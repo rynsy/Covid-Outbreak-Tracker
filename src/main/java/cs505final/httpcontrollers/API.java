@@ -57,16 +57,14 @@ public class API {
         Launcher.appAvailable = false;
         int reset;
         try {
-            Launcher.dbEngine.resetDB();
-            Launcher.initCEP();             // TODO: Make sure this works.
+            Launcher.dbEngine.reset();
+            Launcher.cepEngine.reset();             // TODO: Make sure this works.
             Launcher.zipsInAlert = new HashSet<Integer>();
             Launcher.zipCounts = new HashMap<Integer, Integer>();
             reset = 1;
+            Launcher.appAvailable = true;
         } catch (Exception ex) {
             reset = 0;
-        }
-        if (reset == 1) {
-            Launcher.appAvailable = true;
         }
         responseMap.put("reset_status_code",Integer.toString(reset));
         responseString = gson.toJson(responseMap);

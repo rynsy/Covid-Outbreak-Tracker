@@ -87,11 +87,9 @@ public class DBEngine {
         loadData();
     }
 
-    public void resetDB() {
-        dropTable("patient_location");
-        dropTable("patients");
-        dropTable("hospitals");
-        initDB();
+    public void reset() {
+        deleteDataFromTable("patient_location");
+        deleteDataFromTable("patients");
     }
 
     public void loadData() {
@@ -689,7 +687,7 @@ public class DBEngine {
             try {
                 String stmtString = null;
 
-                stmtString = "DROP FROM " + tableName + " WHERE 1=1";
+                stmtString = "DELETE FROM " + tableName + " WHERE 1=1";
 
                 Statement stmt = conn.createStatement();
 
@@ -752,6 +750,8 @@ public class DBEngine {
     }
 
     public void input(String jsonPayload) {
-        insertPatient(jsonPayload);
+        if (Launcher.appAvailable) {
+            insertPatient(jsonPayload);
+        }
     }
 }

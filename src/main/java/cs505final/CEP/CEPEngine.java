@@ -1,6 +1,7 @@
 package cs505final.CEP;
 
 import com.google.gson.Gson;
+import cs505final.Launcher;
 import io.siddhi.core.SiddhiAppRuntime;
 import io.siddhi.core.SiddhiManager;
 import io.siddhi.core.stream.output.sink.InMemorySink;
@@ -80,19 +81,26 @@ public class CEPEngine {
 
     }
 
+    public void reset() {
+        siddhiAppRuntime.shutdown();
+        siddhiAppRuntime.start();
+    }
+
     public void input(String streamName, String jsonPayload) {
-        try {
+        if (Launcher.appAvailable) {
+            try {
 
-            if (topicMap.containsKey(streamName)) {
-                //InMemoryBroker.publish(topicMap.get(streamName), getByteGenericDataRecordFromString(schemaMap.get(streamName),jsonPayload));
-                InMemoryBroker.publish(topicMap.get(streamName), jsonPayload);
+                if (topicMap.containsKey(streamName)) {
+                    //InMemoryBroker.publish(topicMap.get(streamName), getByteGenericDataRecordFromString(schemaMap.get(streamName),jsonPayload));
+                    InMemoryBroker.publish(topicMap.get(streamName), jsonPayload);
 
-            } else {
-                System.out.println("input error : no schema");
+                } else {
+                    System.out.println("input error : no schema");
+                }
+
+            } catch (Exception ex) {
+                ex.printStackTrace();
             }
-
-        } catch(Exception ex) {
-            ex.printStackTrace();
         }
     }
 

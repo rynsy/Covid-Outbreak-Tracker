@@ -61,21 +61,16 @@ public class TopicConnector {
                 System.out.println(" [x] Received Batch'" +
                         delivery.getEnvelope().getRoutingKey() + "':'" + message + "'");
 
-                List<Map<String,String>> incomingList = gson.fromJson(message, typeOf);
-                for(Map<String,String> map : incomingList) {
-                    if (Launcher.appAvailable) {
-                        System.out.println("INPUT CEP EVENT: " + map);
-                        String payload = gson.toJson(map);
-                        Launcher.cepEngine.input(Launcher.inputStreamName, payload);
-                        Launcher.dbEngine.input(payload);
-                        //Launcher.graphEngine.input(payload);
-                    } else {
-                        System.out.println("APP UNAVAILABLE, DISCARDING CEP EVENT: " + map);
-                    }
+                List<Map<String, String>> incomingList = gson.fromJson(message, typeOf);
+                for (Map<String, String> map : incomingList) {
+                    System.out.println("INPUT CEP EVENT: " + map);
+                    String payload = gson.toJson(map);
+                    if (Launcher.appAvailable) Launcher.cepEngine.input(Launcher.inputStreamName, payload);
+                    if (Launcher.appAvailable) Launcher.dbEngine.input(payload);
+                    //Launcher.graphEngine.input(payload);
                 }
                 System.out.println("");
                 System.out.println("");
-
             };
 
             channel.basicConsume(queueName, true, deliverCallback, consumerTag -> {

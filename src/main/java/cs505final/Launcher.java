@@ -60,6 +60,7 @@ public class Launcher {
 
         cepEngine.createCEP(inputStreamName, outputStreamName, inputStreamAttributesString, outputStreamAttributesString, queryString);
 
+
         cepEngine.siddhiAppRuntime.addCallback("PatientOutStream", new StreamCallback() {
             @Override
             public void receive(Event[] events) {
