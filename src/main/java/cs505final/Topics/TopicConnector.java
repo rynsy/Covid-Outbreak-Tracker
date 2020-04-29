@@ -63,11 +63,15 @@ public class TopicConnector {
 
                 List<Map<String,String>> incomingList = gson.fromJson(message, typeOf);
                 for(Map<String,String> map : incomingList) {
-                    System.out.println("INPUT CEP EVENT: " +  map);
-                    String payload = gson.toJson(map);
-                    Launcher.cepEngine.input(Launcher.inputStreamName, payload);
-                    Launcher.dbEngine.input(payload);
-                    //Launcher.graphEngine.input(payload);
+                    if (Launcher.appAvailable) {
+                        System.out.println("INPUT CEP EVENT: " + map);
+                        String payload = gson.toJson(map);
+                        Launcher.cepEngine.input(Launcher.inputStreamName, payload);
+                        Launcher.dbEngine.input(payload);
+                        //Launcher.graphEngine.input(payload);
+                    } else {
+                        System.out.println("APP UNAVAILABLE, DISCARDING CEP EVENT: " + map);
+                    }
                 }
                 System.out.println("");
                 System.out.println("");

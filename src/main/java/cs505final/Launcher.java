@@ -37,6 +37,8 @@ public class Launcher {
     public static Map<Integer, Integer> zipCounts;
     public static Set<Integer> zipsInAlert;
 
+    public static boolean appAvailable = false;
+
     public static void initCEP() {
         System.out.println("Starting CEP...");
 
@@ -128,7 +130,7 @@ public class Launcher {
 
         //Embedded HTTP initialization
         startServer();
-
+        appAvailable = true;
         try {
             while (true) {
                 Thread.sleep(5000);

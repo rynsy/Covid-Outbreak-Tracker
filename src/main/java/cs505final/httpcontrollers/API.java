@@ -54,6 +54,7 @@ public class API {
     public Response resetApp() {
         String responseString = "{}";
         Map<String,String> responseMap = new HashMap<>();
+        Launcher.appAvailable = false;
         int reset;
         try {
             Launcher.dbEngine.resetDB();
@@ -63,6 +64,9 @@ public class API {
             reset = 1;
         } catch (Exception ex) {
             reset = 0;
+        }
+        if (reset == 1) {
+            Launcher.appAvailable = true;
         }
         responseMap.put("reset_status_code",Integer.toString(reset));
         responseString = gson.toJson(responseMap);
