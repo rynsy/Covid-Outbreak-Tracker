@@ -81,11 +81,6 @@ public class CEPEngine {
 
     }
 
-    public void reset() {
-        siddhiAppRuntime.shutdown();
-        siddhiAppRuntime.start();
-    }
-
     public void input(String streamName, String jsonPayload) {
         if (Launcher.appAvailable) {
             try {

@@ -58,7 +58,7 @@ public class API {
         int reset;
         try {
             Launcher.dbEngine.reset();
-            Launcher.cepEngine.reset();             // TODO: Make sure this works.
+            Launcher.initCEP();
             Launcher.zipsInAlert = new HashSet<Integer>();
             Launcher.zipCounts = new HashMap<Integer, Integer>();
             reset = 1;
