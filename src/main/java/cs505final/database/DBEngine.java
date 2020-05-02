@@ -17,8 +17,8 @@ import java.util.Map;
 public class DBEngine {
     private DataSource ds;
     private String databaseName = "reporting_app";
-    private static String databaseVhost = "mysql";
-//    private static String databaseVhost = "localhost";
+//    private static String databaseVhost = "mysql";
+    private static String databaseVhost = "localhost";
     private static String databaseUserName = "root";
     private static String databasePassword = "rootpwd";
 
@@ -592,6 +592,15 @@ public class DBEngine {
         int patient_zip = getPatientZip(mrn);
         int patient_status = getPatientStatus(mrn);
         boolean high_level_facility = patientCritical(patient_status);
+        List<Integer> hospital_ids = findHospitalByZip(patient_zip, high_level_facility);
+
+        if (hospital_ids.size() > 0) {
+            for (int id : hospital_ids) {
+                if (getHospitalAvailability(id)) {
+                    return id;
+                }
+            }
+        }
 
         while (position + batch_size < (94 - batch_size)) {           //TODO: #hospital zipcodes - batch_size, should be programmatically retrieved
             int[] adjacent_zipcodes = Launcher.graphEngine.adjacent(patient_zip, position, batch_size);
@@ -599,7 +608,7 @@ public class DBEngine {
                 return -1;
             }
             for (int i = 0; i < adjacent_zipcodes.length; i++) {
-                List<Integer> hospital_ids = findHospitalByZip(adjacent_zipcodes[i], high_level_facility);
+                hospital_ids = findHospitalByZip(adjacent_zipcodes[i], high_level_facility);
                 for (int id : hospital_ids) {
                     if (getHospitalAvailability(id)) {
                         return id;

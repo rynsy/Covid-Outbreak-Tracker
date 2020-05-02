@@ -93,6 +93,7 @@ public class Launcher {
                     }
                     Launcher.zipCounts.put(zip, currentZipCount.get(zip));
                 }
+                System.out.println("CEP HAS PROCESSED EVENTS: " + Launcher.zipsInAlert.size() + " zipcodes in alert");
             }
         });
 
