@@ -8,10 +8,7 @@ import org.apache.commons.pool2.impl.GenericObjectPool;
 
 import javax.sql.DataSource;
 import java.sql.*;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 
 public class DBEngine {
@@ -587,8 +584,6 @@ public class DBEngine {
          * A lot can be done to speed this up. The traversal could all be offloaded to the graphdatabase, but that would
          * require storing more information there. Right now it just has the distances between zips and hospitals.
          */
-        int position = 0;
-        int batch_size = 5;
         int patient_zip = getPatientZip(mrn);
         int patient_status = getPatientStatus(mrn);
         boolean high_level_facility = patientCritical(patient_status);
@@ -602,20 +597,17 @@ public class DBEngine {
             }
         }
 
-        while (position + batch_size < (94 - batch_size)) {           //TODO: #hospital zipcodes - batch_size, should be programmatically retrieved
-            int[] adjacent_zipcodes = Launcher.graphEngine.adjacent(patient_zip, position, batch_size);
-            if (adjacent_zipcodes[0] == 0) {
-                return -1;
-            }
-            for (int i = 0; i < adjacent_zipcodes.length; i++) {
-                hospital_ids = findHospitalByZip(adjacent_zipcodes[i], high_level_facility);
-                for (int id : hospital_ids) {
-                    if (getHospitalAvailability(id)) {
-                        return id;
-                    }
+        LinkedHashMap<Integer, Float> adjacent_zipcodes = Launcher.graphEngine.adjacent(patient_zip);
+        if (adjacent_zipcodes.size() <= 0) {
+            return -1;
+        }
+        for (int zip : adjacent_zipcodes.keySet()) {
+            hospital_ids = findHospitalByZip(zip, high_level_facility);
+            for (int id : hospital_ids) {
+                if (getHospitalAvailability(id)) {
+                    return id;
                 }
             }
-            position += batch_size;
         }
         return -1;
     }

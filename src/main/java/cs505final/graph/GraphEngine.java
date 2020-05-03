@@ -12,14 +12,15 @@ import com.orientechnologies.orient.core.record.OVertex;
 import cs505final.Launcher;
 
 import java.util.*;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
 public class GraphEngine {
     private OrientDB orient;
     private ODatabasePool connectionPool;
 
-    private static String databaseVhost = "orientdb";
-//    private static String databaseVhost = "localhost";
+//    private static String databaseVhost = "orientdb";
+    private static String databaseVhost = "localhost";
     private static String databaseHost = "remote:" + databaseVhost;
     private static String databaseName = "test";
     private static String databaseUserName = "root";
@@ -61,6 +62,7 @@ public class GraphEngine {
             distance.createProperty("distance", OType.FLOAT);
             OClass hospital = db.createEdgeClass("Hospital");
             hospital.createProperty("distance", OType.FLOAT);
+            hospital.createIndex("Hospital.distance", OClass.INDEX_TYPE.NOTUNIQUE, "distance");
         }
         if (load) loadData();
     }
@@ -76,7 +78,7 @@ public class GraphEngine {
 
     }
 
-    public int[] adjacent(int zip, int starting_at, int num_results) {
+    public LinkedHashMap<Integer, Float> adjacent(int zip) {
        /*
        *
        * Because of the index, the iterator returns zipcodes from closest to furthest. Returning this in an array in
@@ -86,29 +88,34 @@ public class GraphEngine {
        * most efficient way of doing things, but I can at least pull in zipcodes in batches this way.
        * */
         ODatabaseSession db = createSession(orient);
-        int[] zipcodes = new int[num_results];
+
+        LinkedHashMap<Integer, Float> zipDistancesUnsorted = new LinkedHashMap<Integer, Float>();
+        LinkedHashMap<Integer, Float> zipDistancesSorted = new LinkedHashMap<Integer, Float>();
+
 
         OIndex<?> zipIdx = db.getMetadata().getIndexManager().getIndex("Zip.zipcode");
         OIdentifiable zipV = (OIdentifiable) zipIdx.get(zip);
         try {
             Iterator<OEdge> hospitalEdges = ((OVertex) zipV.getRecord()).getEdges(ODirection.OUT, db.getClass("Hospital")).iterator();
-
-            int sIndex = 0;
-            while(sIndex++ < starting_at && hospitalEdges.hasNext()) hospitalEdges.next();
-
-            int zIndex = 0;
-            while(hospitalEdges.hasNext() && zIndex < num_results) {
+            while(hospitalEdges.hasNext()) {
                 OEdge edge = hospitalEdges.next();
                 OVertex destination = edge.getTo();
+                Float distance = edge.getProperty("distance");
                 int zipDest = destination.getProperty("zipcode");
-                zipcodes[zIndex++] = zipDest;
+                zipDistancesUnsorted.put(zipDest,distance);
             }
         } catch (Exception ex) {
             // Tried to look up a zipcode that doesn't exist. Return 0
-            zipcodes[0] = 0;
         }
         db.close();
-        return zipcodes;
+
+        AtomicInteger i = new AtomicInteger();
+        zipDistancesUnsorted.entrySet()
+                    .stream()
+                    .sorted(Map.Entry.comparingByValue())
+                    .forEachOrdered(x -> zipDistancesSorted.put(x.getKey(), x.getValue()));
+
+        return zipDistancesSorted;
     }
 
     /*
@@ -132,7 +139,7 @@ public class GraphEngine {
         Set<String> uniques = zipDistances.stream().map(o -> o.get("zip_from"))
                 .collect(Collectors.toSet());
 
-        Map<String, OVertex> zipVertecies = new HashMap<String, OVertex>();
+        Map<String, OVertex> zipVerticies = new HashMap<String, OVertex>();
 
         boolean has_hospital = false;
 
@@ -142,11 +149,11 @@ public class GraphEngine {
             has_hospital = hospitalZips.contains(zip);
             zipVertex.setProperty("has_hospital", has_hospital);
             zipVertex.save();
-            zipVertecies.put(zip, zipVertex);
+            zipVerticies.put(zip, zipVertex);
         }
         for( Map<String, String> d: zipDistances) {
-            OVertex from = zipVertecies.get(d.get("zip_from"));
-            OVertex to = zipVertecies.get(d.get("zip_to"));
+            OVertex from = zipVerticies.get(d.get("zip_from"));
+            OVertex to = zipVerticies.get(d.get("zip_to"));
 
             if (hospitalZips.contains(d.get("zip_to"))){
                 OEdge connection = from.addEdge(to, "Hospital");
