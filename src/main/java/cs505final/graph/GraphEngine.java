@@ -10,9 +10,9 @@ import com.orientechnologies.orient.core.record.ODirection;
 import com.orientechnologies.orient.core.record.OEdge;
 import com.orientechnologies.orient.core.record.OVertex;
 import cs505final.Launcher;
+import javafx.util.Pair;
 
 import java.util.*;
-import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
 public class GraphEngine {
@@ -78,7 +78,7 @@ public class GraphEngine {
 
     }
 
-    public LinkedHashMap<Integer, Float> adjacent(int zip) {
+    public List<Pair<Integer, Float>> adjacent(int zip) {
        /*
        *
        * Because of the index, the iterator returns zipcodes from closest to furthest. Returning this in an array in
@@ -89,8 +89,7 @@ public class GraphEngine {
        * */
         ODatabaseSession db = createSession(orient);
 
-        LinkedHashMap<Integer, Float> zipDistancesUnsorted = new LinkedHashMap<Integer, Float>();
-        LinkedHashMap<Integer, Float> zipDistancesSorted = new LinkedHashMap<Integer, Float>();
+        List<Pair<Integer, Float>> zipDistances = new ArrayList<Pair<Integer, Float>>();
 
 
         OIndex<?> zipIdx = db.getMetadata().getIndexManager().getIndex("Zip.zipcode");
@@ -102,20 +101,20 @@ public class GraphEngine {
                 OVertex destination = edge.getTo();
                 Float distance = edge.getProperty("distance");
                 int zipDest = destination.getProperty("zipcode");
-                zipDistancesUnsorted.put(zipDest,distance);
+                Pair<Integer, Float> entry = new Pair<Integer, Float>(zipDest,distance);
+                zipDistances.add(entry);
+                if (zipDistances.size() > 5) {
+                    Collections.sort(zipDistances, Comparator.comparing(x -> x.getValue()));
+                    zipDistances = zipDistances.subList(0, 5);
+                }
             }
         } catch (Exception ex) {
-            // Tried to look up a zipcode that doesn't exist. Return 0
+            ex.printStackTrace();
         }
         db.close();
 
-        AtomicInteger i = new AtomicInteger();
-        zipDistancesUnsorted.entrySet()
-                    .stream()
-                    .sorted(Map.Entry.comparingByValue())
-                    .forEachOrdered(x -> zipDistancesSorted.put(x.getKey(), x.getValue()));
 
-        return zipDistancesSorted;
+        return zipDistances;
     }
 
     /*

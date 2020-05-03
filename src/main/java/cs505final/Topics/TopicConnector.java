@@ -27,17 +27,18 @@ public class TopicConnector {
     public void connect() {
 
         try {
+            /*
             String hostname = "128.163.202.61";
             String username = "student";
             String password = "student01";
             String virtualhost = "patient_feed";
+            */
 
-            /*
-            String hostname = "rabbitmq";
+            //String hostname = "rabbitmq";
+            String hostname = "localhost";
             String username = "guest";
             String password = "guest";
             String virtualhost = "/";
-            */
 
             ConnectionFactory factory = new ConnectionFactory();
             factory.setHost(hostname);

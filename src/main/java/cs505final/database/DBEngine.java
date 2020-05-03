@@ -1,14 +1,20 @@
 package cs505final.database;
 
-import com.google.gson.*;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
 import cs505final.Launcher;
+import javafx.util.Pair;
 import org.apache.commons.dbcp2.*;
 import org.apache.commons.pool2.ObjectPool;
 import org.apache.commons.pool2.impl.GenericObjectPool;
 
 import javax.sql.DataSource;
 import java.sql.*;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 
 public class DBEngine {
@@ -597,11 +603,12 @@ public class DBEngine {
             }
         }
 
-        LinkedHashMap<Integer, Float> adjacent_zipcodes = Launcher.graphEngine.adjacent(patient_zip);
+        List<Pair<Integer, Float>> adjacent_zipcodes = Launcher.graphEngine.adjacent(patient_zip);
         if (adjacent_zipcodes.size() <= 0) {
             return -1;
         }
-        for (int zip : adjacent_zipcodes.keySet()) {
+        for (Pair<Integer,Float> entry : adjacent_zipcodes) {
+            int zip = entry.getKey();
             hospital_ids = findHospitalByZip(zip, high_level_facility);
             for (int id : hospital_ids) {
                 if (getHospitalAvailability(id)) {

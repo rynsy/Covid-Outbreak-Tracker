@@ -116,16 +116,13 @@ public class Launcher {
         System.out.println("RelationalDB Started...");
     }
 
-    public static void test() {
-        int[] testarray = graphEngine.adjacent(40219, 0,5);
-    }
-
     public static void main(String[] args) throws IOException {
         zipCounts = new HashMap<Integer, Integer>();
         zipsInAlert = new HashSet<Integer>();
         initCEP();
         initGraphDb();
         initDb();
+
         //starting Collector
         topicConnector = new TopicConnector();
         topicConnector.connect();
