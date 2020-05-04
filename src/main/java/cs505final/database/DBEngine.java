@@ -4,10 +4,10 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import cs505final.Launcher;
-import javafx.util.Pair;
 import org.apache.commons.dbcp2.*;
 import org.apache.commons.pool2.ObjectPool;
 import org.apache.commons.pool2.impl.GenericObjectPool;
+import org.glassfish.grizzly.utils.Pair;
 
 import javax.sql.DataSource;
 import java.sql.*;
@@ -20,8 +20,8 @@ import java.util.Map;
 public class DBEngine {
     private DataSource ds;
     private String databaseName = "reporting_app";
-//    private static String databaseVhost = "mysql";
-    private static String databaseVhost = "localhost";
+    private static String databaseVhost = "mysql";
+//    private static String databaseVhost = "localhost";
     private static String databaseUserName = "root";
     private static String databasePassword = "rootpwd";
 
@@ -608,7 +608,7 @@ public class DBEngine {
             return -1;
         }
         for (Pair<Integer,Float> entry : adjacent_zipcodes) {
-            int zip = entry.getKey();
+            int zip = entry.getFirst();
             hospital_ids = findHospitalByZip(zip, high_level_facility);
             for (int id : hospital_ids) {
                 if (getHospitalAvailability(id)) {

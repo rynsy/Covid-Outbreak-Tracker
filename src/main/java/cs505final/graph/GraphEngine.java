@@ -10,7 +10,7 @@ import com.orientechnologies.orient.core.record.ODirection;
 import com.orientechnologies.orient.core.record.OEdge;
 import com.orientechnologies.orient.core.record.OVertex;
 import cs505final.Launcher;
-import javafx.util.Pair;
+import org.glassfish.grizzly.utils.Pair;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -19,8 +19,8 @@ public class GraphEngine {
     private OrientDB orient;
     private ODatabasePool connectionPool;
 
-//    private static String databaseVhost = "orientdb";
-    private static String databaseVhost = "localhost";
+    private static String databaseVhost = "orientdb";
+//    private static String databaseVhost = "localhost";
     private static String databaseHost = "remote:" + databaseVhost;
     private static String databaseName = "test";
     private static String databaseUserName = "root";
@@ -104,7 +104,7 @@ public class GraphEngine {
                 Pair<Integer, Float> entry = new Pair<Integer, Float>(zipDest,distance);
                 zipDistances.add(entry);
                 if (zipDistances.size() > 5) {
-                    Collections.sort(zipDistances, Comparator.comparing(x -> x.getValue()));
+                    Collections.sort(zipDistances, Comparator.comparing(x -> x.getSecond()));
                     zipDistances = zipDistances.subList(0, 5);
                 }
             }

@@ -34,8 +34,8 @@ public class TopicConnector {
             String virtualhost = "patient_feed";
             */
 
-            //String hostname = "rabbitmq";
-            String hostname = "localhost";
+            String hostname = "rabbitmq";
+            //String hostname = "localhost";
             String username = "guest";
             String password = "guest";
             String virtualhost = "/";
